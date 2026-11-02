@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+/* Herald design tokens. Colors are heraldic tinctures; every component reads these variables. */
+:root {
+  --tincture-azure: #2747c9;
+  --tincture-or: #d99a16;
+  --tincture-vert: #1e7f55;
+  --tincture-gules: #c2362f;
+  --tincture-sable: #14161c;
+  --tincture-argent: #f5f6f8;
+
+  --page: var(--tincture-argent);
+  --surface: #ffffff;
+  --surface-sunk: #eceef3;
+  --ink: var(--tincture-sable);
+  --ink-soft: #4a5060;
+  --ink-faint: #6c7282;
+  --line: #dde0e7;
+  --line-strong: #c4c9d4;
+
+  --accent: var(--tincture-azure);
+  --accent-strong: #1c35a0;
+  --accent-wash: #e7ebfb;
+  --on-accent: #ffffff;
+  --gold: var(--tincture-or);
+  --gold-ink: #7a5306;
+  --gold-wash: #fbf1dc;
+  --paid: var(--tincture-vert);
+  --paid-ink: #155c3d;
+  --paid-wash: #e2f2ea;
+  --veto: var(--tincture-gules);
+  --veto-ink: #962620;
+  --veto-wash: #f9e4e3;
+  --dao: var(--tincture-sable);
+
+  --font-display: "Gloock", Georgia, "Times New Roman", serif;
+  --font-body: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-ui: 180ms;
+  --dur-hero: 820ms;
+
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0e1014;
+    --surface: #161922;
+    --surface-sunk: #1d212b;
+    --ink: #f1f2f5;
+    --ink-soft: #b6bbc7;
+    --ink-faint: #8b91a1;
+    --line: #272c37;
+    --line-strong: #363c4a;
+    --accent: #7d93ff;
+    --accent-strong: #a3b3ff;
+    --accent-wash: #1d2547;
+    --on-accent: #0e1014;
+    --gold: #e9b33f;
+    --gold-ink: #f3cf7e;
+    --gold-wash: #3a2c0d;
+    --paid: #3cb984;
+    --paid-ink: #8fe0bb;
+    --paid-wash: #0f3022;
+    --veto: #ec6a62;
+    --veto-ink: #f6aaa5;
+    --veto-wash: #3d1614;
+    --dao: #f1f2f5;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --page: #0e1014;
+  --surface: #161922;
+  --surface-sunk: #1d212b;
+  --ink: #f1f2f5;
+  --ink-soft: #b6bbc7;
+  --ink-faint: #8b91a1;
+  --line: #272c37;
+  --line-strong: #363c4a;
+  --accent: #7d93ff;
+  --accent-strong: #a3b3ff;
+  --accent-wash: #1d2547;
+  --on-accent: #0e1014;
+  --gold: #e9b33f;
+  --gold-ink: #f3cf7e;
+  --gold-wash: #3a2c0d;
+  --paid: #3cb984;
+  --paid-ink: #8fe0bb;
+  --paid-wash: #0f3022;
+  --veto: #ec6a62;
+  --veto-ink: #f6aaa5;
+  --veto-wash: #3d1614;
+  --dao: #f1f2f5;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-sunk: var(--surface-sunk);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-wash: var(--accent-wash);
+  --color-on-accent: var(--on-accent);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-gold-wash: var(--gold-wash);
+  --color-paid: var(--paid);
+  --color-paid-ink: var(--paid-ink);
+  --color-paid-wash: var(--paid-wash);
+  --color-veto: var(--veto);
+  --color-veto-ink: var(--veto-ink);
+  --color-veto-wash: var(--veto-wash);
+  --color-dao: var(--dao);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-data: var(--font-data);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius-lg);
+}
+
+html {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--page);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: var(--accent-wash);
+}
+
+.font-data {
+  font-feature-settings: "zero" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The seal stamps down once when it first appears. */
+@keyframes seal-stamp {
+  0% { opacity: 0; transform: scale(1.35) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(0.94) rotate(-6deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+.seal-stamp {
+  animation: seal-stamp var(--dur-hero) var(--ease-out) both;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rise-in {
+  animation: rise-in 420ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seal-stamp,
+  .rise-in {
+    animation: none;
+  }
+  * {
+    transition-duration: 0ms !important;
+  }
+}
