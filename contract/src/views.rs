@@ -106,7 +106,7 @@ impl Contract {
         }
         let campaign = self.campaign(sub.campaign_id);
         let description = format!(
-            "TrustLadder: pay {} NEAR to {} for submission #{} ({}) in \"{}\". Proof: {}",
+            "Herald: pay {} NEAR to {} for submission #{} ({}) in \"{}\". Proof: {}",
             format_near(sub.amount.0),
             sub.creator,
             sub.id,

@@ -1,10 +1,10 @@
 [package]
-name = "trustladder"
+name = "herald"
 version = "1.0.0"
 edition = "2021"
 description = "Ambassador and creator payouts that earn trust, on top of a Sputnik DAO treasury"
 license = "MIT"
-repository = "https://github.com/adexyz0x/trustladder"
+repository = "https://github.com/adexyz0x/herald"
 publish = false
 
 [lib]

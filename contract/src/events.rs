@@ -3,7 +3,7 @@
 use near_sdk::serde_json::{json, Value};
 use near_sdk::env;
 
-pub const STANDARD: &str = "trustladder";
+pub const STANDARD: &str = "herald";
 pub const VERSION: &str = "1.0.0";
 
 pub fn emit(event: &str, data: Value) {

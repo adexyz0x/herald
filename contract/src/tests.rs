@@ -14,7 +14,7 @@ fn acc(name: &str) -> AccountId {
     name.parse().unwrap()
 }
 fn contract_id() -> AccountId {
-    acc("trustladder.near")
+    acc("herald.near")
 }
 fn dao() -> AccountId {
     acc("ambassadors.sputnik-dao.near")

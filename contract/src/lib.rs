@@ -1,4 +1,4 @@
-//! TrustLadder: ambassador and creator payouts that earn trust, on top of a Sputnik DAO treasury.
+//! Herald: ambassador and creator payouts that earn trust, on top of a Sputnik DAO treasury.
 //!
 //! A DAO funds a campaign once. Each payout is then approved by the cheapest route the creator
 //! has earned: automatic after a public challenge window, one reviewer, or a full DAO vote.

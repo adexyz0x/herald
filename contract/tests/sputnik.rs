@@ -2,7 +2,7 @@
 //!
 //! The DAO launches a campaign by voting on a proposal, creators are paid through every
 //! approval route, and a large payout is approved by a DAO vote on the exact proposal that
-//! TrustLadder generates. The same program runs against two Sputnik builds: the one NEAR DevHub's
+//! Herald generates. The same program runs against two Sputnik builds: the one NEAR DevHub's
 //! Trezu treasury runs on mainnet, and the one the testnet factory deploys (see tests/res).
 
 use base64::Engine;
@@ -59,7 +59,7 @@ async fn setup(sputnik: &[u8]) -> anyhow::Result<World> {
     let root = worker.root_account()?;
 
     let app_wasm = near_workspaces::compile_project("./").await?;
-    let app = account(&root, "trustladder", 30).await?.deploy(&app_wasm).await?.into_result()?;
+    let app = account(&root, "herald", 30).await?.deploy(&app_wasm).await?.into_result()?;
     app.call("new").transact().await?.into_result()?;
 
     let council = vec![account(&root, "ada", 30).await?, account(&root, "bayo", 30).await?];
@@ -255,7 +255,7 @@ async fn full_program(sputnik: &[u8]) -> anyhow::Result<()> {
     assert_eq!(w.status(vetoed).await?, "Vetoed");
     assert_eq!(w.tier().await?["points"], 0, "3 points minus the 3-point slash");
 
-    // 6. A large request is paid only after a DAO vote on the proposal TrustLadder generates.
+    // 6. A large request is paid only after a DAO vote on the proposal Herald generates.
     let large = w.submit(None, Some(18)).await?;
     w.review(&w.rita, "escalate", json!({ "submission_id": large })).await?.into_result()?;
     assert_eq!(w.status(large).await?, "AwaitingDao");

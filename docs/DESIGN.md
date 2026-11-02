@@ -1,6 +1,8 @@
-# TrustLadder: design
+# Herald: design
 
-TrustLadder pays ambassadors and creators from a community treasury. The DAO funds a campaign once. After that, every payout is approved by the cheapest route the creator has earned: automatic for proven creators, one reviewer for everyone else, and a full DAO vote for anything large. Every approval, payout and reputation point is public and traceable on NEAR.
+*Pay the people who carry your message.*
+
+Herald pays ambassadors and creators from a community treasury. The DAO funds a campaign once. After that, every payout is approved by the cheapest route the creator has earned: automatic for proven creators, one reviewer for everyone else, and a full DAO vote for anything large. Every approval, payout and reputation point is public and traceable on NEAR.
 
 Status: design for NEAR HACKATHON (Social Money track). Testnet only.
 
@@ -15,11 +17,11 @@ Every crypto project runs an ambassador or creator program. The payout side look
 - Signers rubber-stamp batches they never read, or they become the bottleneck.
 - Creators can't prove their track record, so they start from zero with every new project.
 
-A treasury like Sputnik DAO or Trezu solves custody and approvals. It doesn't solve the volume. TrustLadder is what a community does *with* its treasury when it pays dozens of people every week.
+A treasury like Sputnik DAO or Trezu solves custody and approvals. It doesn't solve the volume. Herald is what a community does *with* its treasury when it pays dozens of people every week.
 
 ## 2. What exists vs what we add
 
-| Need | Sputnik DAO / Trezu today | TrustLadder adds |
+| Need | Sputnik DAO / Trezu today | Herald adds |
 |---|---|---|
 | Custody of funds | Yes (the DAO account holds the treasury) | Nothing. The DAO stays the only governor and moves a capped budget into a campaign with one proposal |
 | Approving a payment | One proposal per payment, voted by a role (e.g. Trezu's Finance role) | Three routes by risk: automatic with a challenge window, one reviewer, or a normal DAO proposal |
@@ -28,7 +30,7 @@ A treasury like Sputnik DAO or Trezu solves custody and approvals. It doesn't so
 | Track record | None | Reputation per creator, scoped to each DAO, with every point linked to a paid submission |
 | Fraud response | Reject a proposal | Veto within the challenge window, slash reputation, ban, all on-chain and reversible by the DAO |
 
-Trezu treasuries are Sputnik DAO accounts (`*.sputnik-dao.near`), so TrustLadder works with both. The only requirement is that the proposer's role may create `call` proposals.
+Trezu treasuries are Sputnik DAO accounts (`*.sputnik-dao.near`), so Herald works with both. The only requirement is that the proposer's role may create `call` proposals.
 
 ## 3. Actors
 
@@ -43,8 +45,8 @@ There is no admin key. The contract has no owner and no upgrade method. Every pr
 
 ## 4. Campaign lifecycle
 
-1. A DAO member proposes **Launch campaign** in the TrustLadder app. The app creates a standard Sputnik `FunctionCall` proposal that calls `create_campaign` with the budget attached as deposit.
-2. The council votes in Sputnik, Trezu or the TrustLadder app. On approval the DAO executes the call and the campaign is live and funded.
+1. A DAO member proposes **Launch campaign** in the Herald app. The app creates a standard Sputnik `FunctionCall` proposal that calls `create_campaign` with the budget attached as deposit.
+2. The council votes in Sputnik, Trezu or the Herald app. On approval the DAO executes the call and the campaign is live and funded.
 3. Creators submit work against the campaign's rate card.
 4. The DAO can top up, change rules or reviewers, or close the campaign at any time through further proposals. Closing returns all unreserved budget to the DAO.
 
@@ -129,7 +131,7 @@ All parameters are set by the DAO when the campaign is created and can only be c
 
 Known limits, stated plainly:
 
-- TrustLadder doesn't verify that a post actually exists or how it performed. That is the reviewer's job. An AI pre-check is on the roadmap.
+- Herald doesn't verify that a post actually exists or how it performed. That is the reviewer's job. An AI pre-check is on the roadmap.
 - A colluding majority of reviewers can approve bad work up to their limits. The DAO is the backstop.
 - Payouts are in NEAR. Stablecoin (NEP-141) budgets are next on the roadmap.
 
@@ -154,7 +156,7 @@ Change methods:
 
 Views: `get_campaign`, `get_campaigns`, `get_submission`, `get_campaign_submissions`, `get_creator_submissions`, `get_reputation(dao, account)`, `get_tier(campaign_id, account)`, `get_dao_proposal(submission_id)` (the exact Sputnik proposal to open for a DAO vote), `get_stats`.
 
-Events follow NEP-297 (`standard: "trustladder"`, `version: "1.0.0"`): `campaign_created`, `campaign_updated`, `campaign_closed`, `submission_created`, `submission_approved`, `submission_rejected`, `submission_vetoed`, `submission_escalated`, `payout_paid`, `payout_failed`, `reputation_changed`.
+Events follow NEP-297 (`standard: "herald"`, `version: "1.0.0"`): `campaign_created`, `campaign_updated`, `campaign_closed`, `submission_created`, `submission_approved`, `submission_rejected`, `submission_vetoed`, `submission_escalated`, `payout_paid`, `payout_failed`, `reputation_changed`.
 
 ## 12. Roadmap after the hackathon
 
