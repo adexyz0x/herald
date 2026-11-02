@@ -1,3 +1,4 @@
+import { formatDuration, formatNear } from "./format";
 import type { Rpc } from "./rpc";
 
 /** Types mirror the contract's JSON exactly (contract/src/types.rs). Amounts are yoctoNEAR strings. */
@@ -224,3 +225,15 @@ export function previewRoute(rules: Rules, tier: Tier, amount: bigint, custom: b
 }
 
 export const OPEN_STATUSES: SubmissionStatus[] = ["Pending", "Challenge", "AwaitingDao"];
+
+/** The rules in plain words, for campaign pages and launch proposals. */
+export function ruleLines(r: Rules): string[] {
+  return [
+    "Newcomers: every deliverable is reviewed.",
+    `Trusted after ${r.trusted_after} paid deliverables: automatic payouts up to ${formatNear(r.auto_limit_trusted)} NEAR.`,
+    `Core after ${r.core_after}: automatic payouts up to ${formatNear(r.auto_limit_core)} NEAR.`,
+    `One reviewer can approve up to ${formatNear(r.reviewer_limit)} NEAR. Anything larger goes to a DAO vote.`,
+    `Automatic payouts wait ${formatDuration(r.challenge_period_sec)} in public. A veto costs ${r.slash_points} points.`,
+    `Up to ${r.max_open_per_creator} open submissions per creator.`,
+  ];
+}

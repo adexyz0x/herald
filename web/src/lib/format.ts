@@ -35,6 +35,26 @@ export function formatDate(ms: number): string {
   });
 }
 
+/** "1 payout", "3 payouts". */
+export function plural(count: number, one: string, many = `${one}s`): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
+/** "4 min ago", "in 6 days". Falls back to the date beyond a week. */
+export function formatRelative(ms: number, nowMs: number): string {
+  const diff = nowMs - ms;
+  const abs = Math.abs(diff);
+  const say = (n: number, unit: string) => (diff >= 0 ? `${n} ${unit} ago` : `in ${n} ${unit}`);
+  if (abs < 45_000) return diff >= 0 ? "just now" : "in under a minute";
+  if (abs < 3_600_000) return say(Math.max(1, Math.round(abs / 60_000)), "min");
+  if (abs < 86_400_000) return say(Math.round(abs / 3_600_000), "h");
+  if (abs < 7 * 86_400_000) {
+    const days = Math.round(abs / 86_400_000);
+    return say(days, days === 1 ? "day" : "days");
+  }
+  return formatDate(ms);
+}
+
 export function formatCountdown(ms: number): string {
   const total = Math.max(0, Math.ceil(ms / 1000));
   const h = Math.floor(total / 3600);

@@ -2,21 +2,38 @@ import type { Call, ProposalInput } from "./herald";
 import { gas } from "./herald";
 import type { Rpc } from "./rpc";
 
+export type ProposalStatus = "InProgress" | "Approved" | "Rejected" | "Removed" | "Expired" | "Moved" | "Failed";
+
 /** The subset of a Sputnik DAO proposal the app uses. */
 export interface Proposal {
   id: number;
   proposer: string;
   description: string;
   kind: Record<string, unknown>;
-  status: "InProgress" | "Approved" | "Rejected" | "Removed" | "Expired" | "Moved" | "Failed";
-  vote_counts: Record<string, [string, string, string]>;
+  status: ProposalStatus;
+  /** Approve, reject and remove totals per role. */
+  vote_counts: Record<string, [number | string, number | string, number | string]>;
   votes: Record<string, "Approve" | "Reject" | "Remove">;
+  /** Nanoseconds. */
   submission_time: string;
 }
 
+interface VotePolicy {
+  weight_kind: string;
+  quorum: string;
+  /** A ratio like [1, 2] (more than half), or a fixed number of votes. */
+  threshold: [number, number] | string;
+}
+
 export interface Policy {
-  roles: { name: string; kind: "Everyone" | { Group: string[] } | { Member: string } }[];
+  roles: {
+    name: string;
+    kind: "Everyone" | { Group: string[] } | { Member: string };
+    vote_policy?: Record<string, VotePolicy>;
+  }[];
+  default_vote_policy: VotePolicy;
   proposal_bond: string;
+  /** Nanoseconds. */
   proposal_period: string;
 }
 
@@ -37,6 +54,10 @@ export class SputnikClient {
       all.push(...(await this.rpc.view<Proposal[]>(this.daoId, "get_proposals", { from_index: from, limit: 100 })));
     }
     return all.reverse();
+  }
+
+  proposal(id: number) {
+    return this.rpc.view<Proposal>(this.daoId, "get_proposal", { id });
   }
 
   balance() {
@@ -72,6 +93,40 @@ export function councilMembers(policy: Policy): string[] {
   return [];
 }
 
+/**
+ * Council votes a function-call proposal needs to pass. Mirrors Sputnik's rule: a ratio threshold
+ * needs more than that share of the council, a fixed threshold needs that many votes.
+ */
+export function votesNeeded(policy: Policy): number {
+  const council = policy.roles.find((r) => r.name === "council");
+  const members = councilMembers(policy).length;
+  const rule = council?.vote_policy?.call ?? policy.default_vote_policy;
+  if (Array.isArray(rule.threshold)) {
+    const [num, den] = rule.threshold;
+    return Math.min(Math.floor((num * members) / den) + 1, members);
+  }
+  return Math.min(Number(rule.threshold), members);
+}
+
+export function proposalTimeMs(proposal: Proposal): number {
+  return Number(BigInt(proposal.submission_time) / 1_000_000n);
+}
+
+export function proposalEndsMs(proposal: Proposal, policy: Policy): number {
+  return Number((BigInt(proposal.submission_time) + BigInt(policy.proposal_period)) / 1_000_000n);
+}
+
+/** Base64 of UTF-8 text. `btoa` alone breaks on characters outside Latin-1, like curly quotes. */
+function toBase64(text: string): string {
+  let binary = "";
+  for (const byte of new TextEncoder().encode(text)) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function fromBase64(data: string): string {
+  return new TextDecoder().decode(Uint8Array.from(atob(data), (c) => c.charCodeAt(0)));
+}
+
 /** Builds a FunctionCall proposal kind that calls Herald, in the shape Sputnik expects. */
 export function heraldCallKind(
   heraldId: string,
@@ -86,7 +141,7 @@ export function heraldCallKind(
       actions: [
         {
           method_name: methodName,
-          args: btoa(JSON.stringify(args)),
+          args: toBase64(JSON.stringify(args)),
           deposit,
           gas: gas(tgas),
         },
@@ -95,20 +150,45 @@ export function heraldCallKind(
   };
 }
 
+export interface HeraldAction {
+  method: string;
+  args: Record<string, unknown>;
+  deposit: string;
+}
+
 /** Reads the Herald method and arguments out of a FunctionCall proposal, if it targets Herald. */
-export function heraldAction(
-  proposal: Proposal,
-  heraldId: string,
-): { method: string; args: Record<string, unknown>; deposit: string } | null {
+export function heraldAction(proposal: Proposal, heraldId: string): HeraldAction | null {
   const call = (proposal.kind as { FunctionCall?: { receiver_id: string; actions: { method_name: string; args: string; deposit: string }[] } })
     .FunctionCall;
   if (!call || call.receiver_id !== heraldId || call.actions.length === 0) return null;
   const action = call.actions[0];
   let args: Record<string, unknown> = {};
   try {
-    args = JSON.parse(atob(action.args));
+    args = JSON.parse(fromBase64(action.args));
   } catch {
     args = {};
   }
   return { method: action.method_name, args, deposit: action.deposit };
+}
+
+/** What a Herald proposal does, in a few words. */
+export function actionLabel(action: HeraldAction): string {
+  switch (action.method) {
+    case "create_campaign":
+      return "Launch a campaign";
+    case "dao_approve":
+      return "Pay a creator";
+    case "dao_reject":
+      return "Decline a payout";
+    case "top_up":
+      return "Top up a campaign";
+    case "update_campaign":
+      return "Change a campaign";
+    case "close_campaign":
+      return "Close a campaign";
+    case "dao_set_ban":
+      return action.args.banned ? "Ban a creator" : "Lift a ban";
+    default:
+      return action.method;
+  }
 }
