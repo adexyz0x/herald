@@ -1,0 +1,14 @@
+# Rust
+contract/target/
+# Web
+web/node_modules/
+web/dist/
+web/.vite/
+# Local secrets and keys never go in the repo
+.env
+.env.*
+!.env.example
+*.pem
+neardev/
+# OS
+.DS_Store
