@@ -1,5 +1,26 @@
 {
-  "fullglove1355.testnet": { "name": "Ade", "note": "leads Herald" },
-  "oliver-herald.testnet": { "name": "Oliver", "note": "operator account run by the Herald team" },
-  "amelia-herald.testnet": { "name": "Amelia", "note": "operator account run by the Herald team" }
+  "fullglove1355.testnet": {
+    "name": "Ade",
+    "note": "leads Herald"
+  },
+  "oliver-herald.testnet": {
+    "name": "Oliver",
+    "note": "operator account run by the Herald team"
+  },
+  "amelia-herald.testnet": {
+    "name": "Amelia",
+    "note": "operator account run by the Herald team"
+  },
+  "aminx-demo.testnet": {
+    "name": "Aminx",
+    "note": "demo tester account run by the Herald team"
+  },
+  "lamz-demo.testnet": {
+    "name": "Lamz",
+    "note": "demo tester account run by the Herald team"
+  },
+  "zhod-demo.testnet": {
+    "name": "Zhod",
+    "note": "demo tester account run by the Herald team"
+  }
 }

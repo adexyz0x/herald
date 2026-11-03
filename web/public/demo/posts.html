@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Demo posts written for Herald's demo test on NEAR testnet. They are not real posts." />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Herald demo posts</title>
+    <style>
+      :root {
+        --page: #f4f6fa;
+        --surface: #ffffff;
+        --ink: #12141b;
+        --ink-soft: #464c5c;
+        --ink-faint: #626a7e;
+        --line: #dfe3eb;
+        --azure: #2747c9;
+        --or-ink: #7a5306;
+        --or-wash: #fcf2dc;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page: #0b0e17;
+          --surface: #121726;
+          --ink: #eef1f8;
+          --ink-soft: #b3bacb;
+          --ink-faint: #8790a6;
+          --line: #232a40;
+          --azure: #8197ff;
+          --or-ink: #f5d27f;
+          --or-wash: #382a0c;
+          color-scheme: dark;
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.6 "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+      .band { height: 3px; background: linear-gradient(90deg, #2747c9 0 34%, #d99a16 34% 56%, #6b3fb8 56% 74%, #1e7f55 74% 90%, #c2362f 90% 100%); }
+      main { max-width: 640px; margin: 0 auto; padding: 36px 16px 64px; }
+      a { color: var(--azure); }
+      h1 { font: 400 clamp(30px, 5vw, 40px)/1.1 Georgia, "Times New Roman", serif; margin: 20px 0 8px; }
+      .banner { margin: 16px 0 28px; padding: 12px 14px; border-radius: 10px; background: var(--or-wash); color: var(--or-ink); font-size: 14.5px; }
+      article { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin: 16px 0; scroll-margin-top: 16px; }
+      article:target { outline: 2px solid var(--azure); outline-offset: 2px; }
+      .meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; font-size: 13.5px; color: var(--ink-faint); }
+      .meta strong { color: var(--ink); font-size: 15px; }
+      .tag { border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; font-size: 12px; }
+      ol { margin: 12px 0 0; padding-left: 22px; }
+      li, p { color: var(--ink-soft); }
+      li { margin: 8px 0; }
+      footer { margin-top: 40px; color: var(--ink-faint); font-size: 13.5px; }
+    </style>
+  </head>
+  <body>
+    <div class="band" aria-hidden="true"></div>
+    <main>
+      <a href="/">← Herald</a>
+      <h1>Demo posts</h1>
+      <p class="banner">
+        These posts were written by the Herald team for a demo test on NEAR testnet. They are not real X posts, and the demo tester accounts that
+        submitted them (Aminx, Lamz and Zhod) are run by the Herald team. Payouts were made in test NEAR, which has no money value.
+      </p>
+
+      <article id="lamz-thread">
+        <div class="meta"><strong>Lamz</strong><span>lamz-demo.testnet</span><span class="tag">X thread · demo</span></div>
+        <ol>
+          <li>Most DAOs pay ambassadors the slow way: a spreadsheet, a monthly vote, and weeks of waiting. Herald fixes that on NEAR. 🧵</li>
+          <li>The DAO votes once to fund a campaign with a rate card: a thread pays this, a video pays that. The money sits in a contract with no admin key.</li>
+          <li>New creators get one reviewer. Once you've been paid a few times you're Trusted, and rate-card posts pay you automatically after a short public window.</li>
+          <li>Big or unusual asks still go to a real DAO vote. Every payout, veto and point is public. #NEARHackathon @NEARProtocol</li>
+        </ol>
+      </article>
+
+      <article id="aminx-thread-1">
+        <div class="meta"><strong>Aminx</strong><span>aminx-demo.testnet</span><span class="tag">X thread · demo</span></div>
+        <ol>
+          <li>If you run an ambassador program, you know the pain: proving work, chasing payment, waiting on a vote for every 20 dollars. 🧵 on Herald</li>
+          <li>Herald turns a DAO treasury into a payroll for creators. Rate card in, proof link in, payout out, all on NEAR.</li>
+          <li>The clever part: trust is earned per DAO. Your record here never unlocks automatic payouts somewhere else.</li>
+        </ol>
+      </article>
+
+      <article id="aminx-thread-2">
+        <div class="meta"><strong>Aminx</strong><span>aminx-demo.testnet</span><span class="tag">X thread · demo</span></div>
+        <ol>
+          <li>Three routes, one treasury. That's the whole idea behind Herald. 🧵</li>
+          <li>Automatic: Trusted creators are paid after a public window where any reviewer can veto.</li>
+          <li>One reviewer: newcomers, custom amounts, anything over the automatic limit.</li>
+          <li>DAO vote: big asks become a normal Sputnik proposal. Works with Trezu treasuries too.</li>
+        </ol>
+      </article>
+
+      <article id="aminx-thread-3">
+        <div class="meta"><strong>Aminx</strong><span>aminx-demo.testnet</span><span class="tag">X thread · demo</span></div>
+        <ol>
+          <li>Just got paid automatically on Herald: no reviewer needed, because two earlier posts already earned me Trusted. 🧵</li>
+          <li>It waited three minutes in public first, so anyone on the review team could have vetoed it. That's the trade: speed for people who've proven themselves, eyes on everyone.</li>
+        </ol>
+      </article>
+
+      <article id="zhod-translation">
+        <div class="meta"><strong>Zhod</strong><span>zhod-demo.testnet</span><span class="tag">Custom request · demo</span></div>
+        <p>
+          Translated the Herald launch week brief into Yoruba for creators in Lagos and Ibadan, and shared it in two community chats. Asked for a custom
+          2 NEAR, which the reviewer sent to the DAO council for a vote.
+        </p>
+      </article>
+
+      <footer>Part of Herald's demo test on NEAR testnet. Real pilot posts link to real X posts.</footer>
+    </main>
+  </body>
+</html>

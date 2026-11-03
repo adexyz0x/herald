@@ -90,6 +90,9 @@ export function CreatorPage({ accountId }: { accountId: string }) {
             {isMe && <span className="rounded-sm bg-accent-wash px-2 py-0.5 text-[12.5px] font-medium text-accent-strong">This is you</span>}
           </div>
           <p className="mt-1 font-data text-[13px] text-ink-faint">{accountId}</p>
+          {config.profiles[accountId]?.note && (
+            <p className="mt-1.5 inline-flex rounded-sm bg-gold-wash px-2 py-0.5 text-[12.5px] font-medium text-gold-ink first-letter:uppercase">{config.profiles[accountId]?.note}</p>
+          )}
           {roles.length > 0 && <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-soft">{roles}</p>}
         </div>
       </div>

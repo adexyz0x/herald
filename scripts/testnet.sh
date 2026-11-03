@@ -13,6 +13,11 @@
 #   ./scripts/testnet.sh pending                             submissions waiting on a reviewer, with proof links
 #   ./scripts/testnet.sh approve 3 [reviewer.testnet]        approve and pay submission 3
 #   ./scripts/testnet.sh reject 3 "reason" [reviewer.testnet] reject submission 3 with a reason
+#   ./scripts/testnet.sh submit 0 1 https://... "note" c.testnet   submit work: campaign 0, rate-card line 1
+#   ./scripts/testnet.sh submit 0 custom:2 https://... "note" c.testnet   or a custom amount in NEAR
+#   ./scripts/testnet.sh escalate 3 [reviewer.testnet]       send submission 3 to a DAO vote
+#   ./scripts/testnet.sh payout-vote 3 proposer.testnet      file the DAO proposal that pays submission 3
+#   ./scripts/testnet.sh finalize 3 [anyone.testnet]         send an automatic payout once its window closes
 #
 # DRY=1 prints what a step would send and stops before signing.
 # Steps sign with keys in this Mac's keychain, put there when the accounts were created. Test NEAR
@@ -58,7 +63,7 @@ balance() {
 
 case "${1:-}" in
   status)
-    for account in "$HERALD" "$DAO" oliver-herald.testnet amelia-herald.testnet; do
+    for account in "$HERALD" "$DAO" oliver-herald.testnet amelia-herald.testnet aminx-demo.testnet lamz-demo.testnet zhod-demo.testnet; do
       echo "$account: $(balance "$account")"
     done
     ;;
@@ -191,8 +196,53 @@ EOF
       sign-as "$reviewer" network-config testnet sign-with-keychain send
     ;;
 
+  submit)
+    campaign="${2:-}"; line="${3:-}"; proof="${4:-}"; note="${5:-}"; creator="${6:-}"
+    [[ "$campaign" =~ ^[0-9]+$ ]] && [ -n "$line" ] && [ -n "$proof" ] && [ -n "$creator" ] ||
+      { echo 'Usage: ./scripts/testnet.sh submit <campaign> <line index|custom:NEAR> <proof url> "<note>" <creator.testnet>'; exit 1; }
+    args=$(python3 - "$campaign" "$line" "$proof" "$note" <<'EOF'
+import json, sys
+campaign, line, proof, note = sys.argv[1:5]
+custom = line.startswith("custom:")
+print(json.dumps({
+    "campaign_id": int(campaign),
+    "deliverable_index": None if custom else int(line),
+    "custom_amount": str(round(float(line.split(":", 1)[1]) * 1000) * 10**21) if custom else None,
+    "proof_url": proof,
+    "note": note,
+}))
+EOF
+)
+    confirm "Submit to campaign $campaign as $creator ($line): $proof"
+    near contract call-function as-transaction "$HERALD" submit json-args "$args" \
+      prepaid-gas '50.0 Tgas' attached-deposit '0.05 NEAR' \
+      sign-as "$creator" network-config testnet sign-with-keychain send
+    ;;
+
+  escalate | finalize)
+    action="$1"; id="${2:-}"; signer="${3:-amelia-herald.testnet}"
+    [[ "$id" =~ ^[0-9]+$ ]] || { echo "Usage: ./scripts/testnet.sh $action <submission id> [signer.testnet]"; exit 1; }
+    confirm "$action submission #$id, as $signer."
+    near contract call-function as-transaction "$HERALD" "$action" json-args "{\"submission_id\":$id}" \
+      prepaid-gas '100.0 Tgas' attached-deposit '0 NEAR' \
+      sign-as "$signer" network-config testnet sign-with-keychain send
+    ;;
+
+  payout-vote)
+    id="${2:-}"; proposer="${3:-}"
+    [[ "$id" =~ ^[0-9]+$ ]] && [ -n "$proposer" ] || { echo "Usage: ./scripts/testnet.sh payout-vote <submission id> <proposer.testnet>"; exit 1; }
+    # Herald writes the exact proposal; this files it, the same as "Open DAO vote" in the app.
+    proposal=$(rpc_view "$HERALD" get_dao_proposal "{\"submission_id\":$id}" | python3 -c 'import json,sys; p=json.load(sys.stdin); sys.exit("No DAO vote needed for that submission.") if p is None else print(json.dumps({"proposal": p}))')
+    bond=$(rpc_view "$DAO" get_policy | python3 -c 'import json,sys; print(int(json.load(sys.stdin)["proposal_bond"])/1e24)')
+    confirm "File the DAO proposal to pay submission #$id, as $proposer, with the $bond NEAR bond."
+    near contract call-function as-transaction "$DAO" add_proposal json-args "$proposal" \
+      prepaid-gas '50.0 Tgas' attached-deposit "$bond NEAR" \
+      sign-as "$proposer" network-config testnet sign-with-keychain send
+    ;;
+
   *)
-    sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
+    # The comment block at the top of this file is the help text.
+    awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"
     exit 1
     ;;
 esac
