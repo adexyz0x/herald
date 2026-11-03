@@ -1,0 +1,12 @@
+{
+  "title": "Herald launch week",
+  "brief_url": "https://herald-near.pages.dev/briefs/launch-week.html",
+  "budget_near": 8,
+  "rate_card": [
+    { "name": "X thread", "near": 0.5 },
+    { "name": "Short video", "near": 1.5 },
+    { "name": "Space co-host", "near": 1 }
+  ],
+  "reviewers": ["fullglove1355.testnet", "herald-council-2.testnet"],
+  "rules": "fast"
+}
