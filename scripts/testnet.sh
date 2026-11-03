@@ -80,7 +80,7 @@ case "${1:-}" in
     confirm "Create $DAO through $FACTORY with council: $*. $payer pays $deposit test NEAR; about 4.8 covers storage and the rest becomes the treasury."
     near contract call-function as-transaction "$FACTORY" create \
       json-args "{\"name\":\"$DAO_NAME\",\"args\":\"$args\"}" \
-      prepaid-gas '300.0 Tgas' attached-deposit "$deposit NEAR" \
+      prepaid-gas '250.0 Tgas' attached-deposit "$deposit NEAR" \
       sign-as "$payer" network-config testnet sign-with-keychain send
     ;;
 
