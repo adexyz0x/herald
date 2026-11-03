@@ -1,11 +1,13 @@
+import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { AccountLink, Avatar, Near, RankBadge, When } from "../components/chain";
 import { SubmissionRow, type RowContext } from "../components/SubmissionRow";
-import { ActionButton, Button, EmptyState, ExternalLink, Field, Modal, Panel, inputBase, inputClass } from "../components/ui";
+import { ActionButton, Button, EmptyState, ExternalLink, Field, Modal, PageHeader, Panel, SectionTitle, inputBase, inputClass } from "../components/ui";
 import { useApp, useChainData, useChainNow } from "../lib/app";
 import { formatNear, parseNear, toNear } from "../lib/format";
 import { ruleLines, type Campaign, type Deliverable, type HeraldClient, type Rules, type Submission } from "../lib/herald";
 import { useDaoContext, useProgram, type DaoContext } from "../lib/hooks";
+import { CountUp, ease, formatNearNumber, nearNumber, rowMotion } from "../lib/motion";
 import { href } from "../lib/router";
 import {
   actionLabel,
@@ -90,16 +92,23 @@ export function CouncilPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-[clamp(34px,4.6vw,56px)] leading-[1.05]">Council</h1>
+      <PageHeader title="Council" tone="dao">
         <p className="mt-2 max-w-[68ch] text-[15px] text-ink-soft">
           {config.daoName} is a Sputnik DAO at <span className="font-data text-[13.5px] text-ink">{config.dao}</span>. Herald only ever holds the budgets the DAO votes in, and only the DAO's own proposals can launch, top up or close a campaign.
         </p>
-      </div>
+      </PageHeader>
 
-      <section aria-label="Treasury and council" className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line lg:grid-cols-4">
-        <Fact label="Treasury">{balance.data != null ? <Near value={balance.data} className="font-data text-[20px] leading-tight text-ink sm:text-[24px]" /> : "…"}</Fact>
-        <Fact label="Council">
+      <section aria-label="Treasury and council" className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line shadow-card lg:grid-cols-4">
+        <Fact label="Treasury" dot="bg-gold">
+          {balance.data != null ? (
+            <span className="font-data text-[20px] leading-tight text-ink sm:text-[24px]">
+              <CountUp value={nearNumber(balance.data)} format={formatNearNumber} /> <span className="text-ink-faint">NEAR</span>
+            </span>
+          ) : (
+            "…"
+          )}
+        </Fact>
+        <Fact label="Council" dot="bg-dao">
           <span className="flex items-center gap-2">
             <span className="flex -space-x-1.5">
               {d.council.map((m) => (
@@ -111,12 +120,12 @@ export function CouncilPage() {
             <span className="font-data text-[20px] leading-tight text-ink sm:text-[24px]">{d.council.length}</span>
           </span>
         </Fact>
-        <Fact label="Votes to pass">
+        <Fact label="Votes to pass" dot="bg-dao">
           <span className="font-data text-[20px] leading-tight text-ink sm:text-[24px]">
             {d.needed} <span className="text-[15px] text-ink-faint">of {d.council.length}</span>
           </span>
         </Fact>
-        <Fact label="Proposal bond" note="Returned when the vote ends">
+        <Fact label="Proposal bond" dot="bg-accent" note="Returned when the vote ends">
           <Near value={d.bond} className="font-data text-[20px] leading-tight text-ink sm:text-[24px]" />
         </Fact>
       </section>
@@ -130,37 +139,41 @@ export function CouncilPage() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-10">
           <section className="flex flex-col gap-3">
-            <SectionHead title="Open votes" count={open.length} hint="Every Herald proposal the council hasn't finished voting on." />
+            <SectionTitle title="Open votes" tone="dao" count={open.length} hint="Every Herald proposal the council hasn't finished voting on." />
             {open.length === 0 ? (
-              <p className="rounded-lg border border-line bg-surface px-5 py-5 text-sm text-ink-faint">No open votes. Payouts above the reviewer limit and new campaigns show up here.</p>
+              <p className="rounded-lg border border-line bg-surface px-5 py-5 text-sm text-ink-faint shadow-card">No open votes. Payouts above the reviewer limit and new campaigns show up here.</p>
             ) : (
               <ul className="flex flex-col gap-4">
-                {open.map((h) => (
-                  <VoteCard key={h.proposal.id} item={h} ctx={d} isCouncil={isCouncil} lookup={lookup} />
-                ))}
+                <AnimatePresence initial={false}>
+                  {open.map((h) => (
+                    <VoteCard key={h.proposal.id} item={h} ctx={d} isCouncil={isCouncil} lookup={lookup} />
+                  ))}
+                </AnimatePresence>
               </ul>
             )}
           </section>
 
           <section className="flex flex-col gap-3">
-            <SectionHead title="Payouts that need a vote" count={needsVote.length} hint="Above the reviewer limit, or sent up by a reviewer. One click turns each into a ready-made DAO proposal." />
-            <div className="rounded-lg border border-line bg-surface px-5">
+            <SectionTitle title="Payouts that need a vote" tone="dao" count={needsVote.length} hint="Above the reviewer limit, or sent up by a reviewer. One click turns each into a ready-made DAO proposal." />
+            <div className="rounded-lg border border-line bg-surface px-5 shadow-card">
               {needsVote.length === 0 ? (
                 <p className="py-5 text-sm text-ink-faint">Every large payout already has a vote open.</p>
               ) : (
                 <ul>
-                  {needsVote.map((s) => {
-                    const campaign = campaigns.find((c) => c.id === s.campaign_id);
-                    return campaign ? <SubmissionRow key={s.id} sub={s} campaign={campaign} ctx={rowCtx} showCampaign /> : null;
-                  })}
+                  <AnimatePresence initial={false}>
+                    {needsVote.map((s) => {
+                      const campaign = campaigns.find((c) => c.id === s.campaign_id);
+                      return campaign ? <SubmissionRow key={s.id} sub={s} campaign={campaign} ctx={rowCtx} showCampaign /> : null;
+                    })}
+                  </AnimatePresence>
                 </ul>
               )}
             </div>
           </section>
 
           <section className="flex flex-col gap-3">
-            <SectionHead title="Decided" count={decided.length} hint="The latest Herald proposals the DAO has voted through or turned down." />
-            <div className="rounded-lg border border-line bg-surface">
+            <SectionTitle title="Decided" tone="ink" count={decided.length} hint="The latest Herald proposals the DAO has voted through or turned down." />
+            <div className="rounded-lg border border-line bg-surface shadow-card">
               {decided.length === 0 ? (
                 <p className="px-5 py-5 text-sm text-ink-faint">Nothing decided yet.</p>
               ) : (
@@ -183,24 +196,15 @@ export function CouncilPage() {
   );
 }
 
-function Fact({ label, note, children }: { label: string; note?: string; children: ReactNode }) {
+function Fact({ label, dot, note, children }: { label: string; dot: string; note?: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-1 bg-surface px-5 py-4">
-      <span className="text-[13px] text-ink-faint">{label}</span>
+      <span className="flex items-center gap-2 text-[13px] text-ink-faint">
+        <span className={`size-2 rounded-full ${dot}`} aria-hidden="true" />
+        {label}
+      </span>
       {children}
       {note && <span className="text-[12px] text-ink-faint">{note}</span>}
-    </div>
-  );
-}
-
-function SectionHead({ title, count, hint }: { title: string; count: number; hint: string }) {
-  return (
-    <div>
-      <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-        {title}
-        <span className="font-data text-[14px] font-normal text-ink-faint">{count}</span>
-      </h2>
-      <p className="mt-0.5 max-w-[70ch] text-[13.5px] text-ink-soft">{hint}</p>
     </div>
   );
 }
@@ -278,7 +282,8 @@ function VoteCard({ item, ctx, isCouncil, lookup }: { item: HeraldProposal; ctx:
   const reject = () => execute(dao.vote(p.id, false, p.kind), { success: "Vote recorded." });
 
   return (
-    <li className="rounded-lg border border-line bg-surface">
+    <motion.li {...rowMotion} exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.2, ease } }} className="relative overflow-hidden rounded-lg border border-line bg-surface shadow-card">
+      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] bg-dao" />
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-3.5">
         <div className="min-w-0">
           <p className="text-[12.5px] text-ink-faint">
@@ -330,7 +335,7 @@ function VoteCard({ item, ctx, isCouncil, lookup }: { item: HeraldProposal; ctx:
         )}
         {myVote && <span className="text-[13px] text-ink-soft">You voted to {myVote === "Approve" ? "approve" : myVote === "Reject" ? "reject" : "remove"}.</span>}
       </div>
-    </li>
+    </motion.li>
   );
 }
 
@@ -342,7 +347,9 @@ function Tally({ approvals, needed }: { approvals: number; needed: number }) {
       </span>
       <span className="flex gap-1" aria-hidden="true">
         {Array.from({ length: needed }, (_, i) => (
-          <span key={i} className={`h-1.5 w-6 rounded-full ${i < approvals ? "bg-paid" : "bg-sunk"}`} />
+          <span key={i} className="h-1.5 w-6 overflow-hidden rounded-full bg-sunk">
+            <motion.span className="block h-full rounded-full bg-dao" initial={false} animate={{ width: i < approvals ? "100%" : "0%" }} transition={{ duration: 0.5, ease, delay: i * 0.08 }} />
+          </span>
         ))}
       </span>
     </div>
@@ -476,10 +483,11 @@ function LaunchForm({ ctx, canPropose, treasury }: { ctx: DaoContext; canPropose
   const [preset, setPreset] = useState<Preset>(config.network === "local" ? "fast" : "standard");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
 
   if (!canPropose) {
     return (
-      <Panel title="Launch a campaign">
+      <Panel title="Launch a campaign" tone="dao">
         <p className="text-sm text-ink-soft">A council member writes the brief, rate card and rules. Herald turns it into one DAO proposal, and the budget moves only if the vote passes.</p>
       </Panel>
     );
@@ -532,13 +540,16 @@ function LaunchForm({ ctx, canPropose, treasury }: { ctx: DaoContext; canPropose
       setLines([{ name: "", amount: "" }]);
       setPicked([]);
       setOthers("");
+      setOpen(false);
     }
   }
 
   return (
     <Panel
       title="Launch a campaign"
+      tone="dao"
       action={
+        open &&
         config.network === "local" && (
           <button type="button" onClick={fillExample} className="text-[13px] font-medium text-accent hover:underline">
             Fill an example
@@ -546,88 +557,107 @@ function LaunchForm({ ctx, canPropose, treasury }: { ctx: DaoContext; canPropose
         )
       }
     >
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-        <Field label="Name" error={errors.title}>
-          {({ id, describedBy, invalid }) => <input id={id} className={inputClass} value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} aria-describedby={describedBy} aria-invalid={invalid} placeholder="Spaces season" />}
-        </Field>
-        <Field label="Brief link" error={errors.brief} hint="What creators should make, and what's off limits.">
-          {({ id, describedBy, invalid }) => <input id={id} type="url" className={inputClass} value={brief} onChange={(e) => setBrief(e.target.value)} aria-describedby={describedBy} aria-invalid={invalid} placeholder="https://" />}
-        </Field>
-        <Field label="Budget in NEAR" error={errors.budget} hint={treasury != null ? `The treasury holds ${formatNear(treasury)} NEAR.` : undefined}>
-          {({ id, describedBy, invalid }) => <input id={id} inputMode="decimal" className={`${inputClass} font-data`} value={budget} onChange={(e) => setBudget(e.target.value)} aria-describedby={describedBy} aria-invalid={invalid} placeholder="40" />}
-        </Field>
+      {!open && (
+        <div className="flex flex-col items-start gap-4">
+          <p className="text-sm text-ink-soft">Write the brief, rate card and rules once. Herald turns them into one DAO proposal, and the budget moves only if the vote passes.</p>
+          <Button variant="primary" onClick={() => setOpen(true)}>
+            Start a proposal
+          </Button>
+        </div>
+      )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div key="form" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease }} className="-m-1 overflow-hidden p-1">
+            <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+              <Field label="Name" error={errors.title}>
+                {({ id, describedBy, invalid }) => <input id={id} className={inputClass} value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} aria-describedby={describedBy} aria-invalid={invalid} placeholder="Spaces season" />}
+              </Field>
+              <Field label="Brief link" error={errors.brief} hint="What creators should make, and what's off limits.">
+                {({ id, describedBy, invalid }) => <input id={id} type="url" className={inputClass} value={brief} onChange={(e) => setBrief(e.target.value)} aria-describedby={describedBy} aria-invalid={invalid} placeholder="https://" />}
+              </Field>
+              <Field label="Budget in NEAR" error={errors.budget} hint={treasury != null ? `The treasury holds ${formatNear(treasury)} NEAR.` : undefined}>
+                {({ id, describedBy, invalid }) => <input id={id} inputMode="decimal" className={`${inputClass} font-data`} value={budget} onChange={(e) => setBudget(e.target.value)} aria-describedby={describedBy} aria-invalid={invalid} placeholder="40" />}
+              </Field>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-[13px] font-medium text-ink">Rate card</legend>
-          {lines.map((line, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input aria-label={`Deliverable ${i + 1} name`} className={`${inputBase} w-full min-w-0 flex-1`} value={line.name} maxLength={40} onChange={(e) => updateLine(i, { name: e.target.value })} placeholder="X thread" />
-              <input aria-label={`Deliverable ${i + 1} pays, in NEAR`} inputMode="decimal" className={`${inputBase} w-20 shrink-0 font-data`} value={line.amount} onChange={(e) => updateLine(i, { amount: e.target.value })} placeholder="2" />
-              <button
-                type="button"
-                onClick={() => setLines((all) => all.filter((_, j) => j !== i))}
-                disabled={lines.length === 1}
-                aria-label={`Remove deliverable ${i + 1}`}
-                className="flex size-10 shrink-0 items-center justify-center rounded-md text-ink-faint hover:bg-sunk hover:text-ink disabled:opacity-40"
-              >
-                <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-          ))}
-          {errors.lines && <p className="text-[12.5px] text-veto-ink">{errors.lines}</p>}
-          {lines.length < 12 && (
-            <button type="button" onClick={() => setLines((all) => [...all, { name: "", amount: "" }])} className="self-start text-[13px] font-medium text-accent hover:underline">
-              Add a deliverable
-            </button>
-          )}
-        </fieldset>
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-[13px] font-medium text-ink">Rate card</legend>
+                {lines.map((line, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input aria-label={`Deliverable ${i + 1} name`} className={`${inputBase} w-full min-w-0 flex-1`} value={line.name} maxLength={40} onChange={(e) => updateLine(i, { name: e.target.value })} placeholder="X thread" />
+                    <input aria-label={`Deliverable ${i + 1} pays, in NEAR`} inputMode="decimal" className={`${inputBase} w-20 shrink-0 font-data`} value={line.amount} onChange={(e) => updateLine(i, { amount: e.target.value })} placeholder="2" />
+                    <button
+                      type="button"
+                      onClick={() => setLines((all) => all.filter((_, j) => j !== i))}
+                      disabled={lines.length === 1}
+                      aria-label={`Remove deliverable ${i + 1}`}
+                      className="flex size-10 shrink-0 items-center justify-center rounded-md text-ink-faint hover:bg-sunk hover:text-ink disabled:opacity-40"
+                    >
+                      <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+                {errors.lines && <p className="text-[12.5px] text-veto-ink">{errors.lines}</p>}
+                {lines.length < 12 && (
+                  <button type="button" onClick={() => setLines((all) => [...all, { name: "", amount: "" }])} className="self-start text-[13px] font-medium text-accent hover:underline">
+                    Add a deliverable
+                  </button>
+                )}
+              </fieldset>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-[13px] font-medium text-ink">Reviewers</legend>
-          {reviewerPersonas.map((p) => (
-            <label key={p.accountId} className="flex cursor-pointer items-center gap-2.5 text-sm">
-              <input
-                type="checkbox"
-                className="accent-[var(--accent)]"
-                checked={picked.includes(p.accountId)}
-                onChange={(e) => setPicked((all) => (e.target.checked ? [...all, p.accountId] : all.filter((a) => a !== p.accountId)))}
-              />
-              <Avatar accountId={p.accountId} size={22} />
-              <span className="text-ink">{p.name}</span>
-              <span className="font-data text-[12px] text-ink-faint">{p.accountId}</span>
-            </label>
-          ))}
-          <input aria-label="Other reviewer accounts" className={inputClass} value={others} onChange={(e) => setOthers(e.target.value)} placeholder={reviewerPersonas.length ? "Others, separated by commas" : "kemi.near, marco.near"} />
-          {errors.reviewers && <p className="text-[12.5px] text-veto-ink">{errors.reviewers}</p>}
-        </fieldset>
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-[13px] font-medium text-ink">Reviewers</legend>
+                {reviewerPersonas.map((p) => (
+                  <label key={p.accountId} className="flex cursor-pointer items-center gap-2.5 text-sm">
+                    <input
+                      type="checkbox"
+                      className="accent-[var(--accent)]"
+                      checked={picked.includes(p.accountId)}
+                      onChange={(e) => setPicked((all) => (e.target.checked ? [...all, p.accountId] : all.filter((a) => a !== p.accountId)))}
+                    />
+                    <Avatar accountId={p.accountId} size={22} />
+                    <span className="text-ink">{p.name}</span>
+                    <span className="font-data text-[12px] text-ink-faint">{p.accountId}</span>
+                  </label>
+                ))}
+                <input aria-label="Other reviewer accounts" className={inputClass} value={others} onChange={(e) => setOthers(e.target.value)} placeholder={reviewerPersonas.length ? "Others, separated by commas" : "kemi.near, marco.near"} />
+                {errors.reviewers && <p className="text-[12.5px] text-veto-ink">{errors.reviewers}</p>}
+              </fieldset>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-[13px] font-medium text-ink">Payout rules</legend>
-          <div className="grid grid-cols-2 gap-2">
-            {(Object.keys(PRESETS) as Preset[]).map((key) => (
-              <label key={key} className="flex cursor-pointer flex-col gap-1 rounded-md border border-line px-3 py-2.5 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-wash">
-                <span className="flex items-center gap-2 font-medium text-ink">
-                  <input type="radio" name="preset" className="accent-[var(--accent)]" checked={preset === key} onChange={() => setPreset(key)} />
-                  {PRESETS[key].label}
-                </span>
-                <span className="text-[12.5px] text-ink-soft">{PRESETS[key].blurb}</span>
-              </label>
-            ))}
-          </div>
-          <ul className="mt-1 flex flex-col gap-1 text-[12.5px] text-ink-soft">
-            {ruleLines(PRESETS[preset].rules).map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </fieldset>
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-[13px] font-medium text-ink">Payout rules</legend>
+                <div className="grid grid-cols-2 gap-2">
+                  {(Object.keys(PRESETS) as Preset[]).map((key) => (
+                    <label key={key} className="flex cursor-pointer flex-col gap-1 rounded-md border border-line px-3 py-2.5 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-wash">
+                      <span className="flex items-center gap-2 font-medium text-ink">
+                        <input type="radio" name="preset" className="accent-[var(--accent)]" checked={preset === key} onChange={() => setPreset(key)} />
+                        {PRESETS[key].label}
+                      </span>
+                      <span className="text-[12.5px] text-ink-soft">{PRESETS[key].blurb}</span>
+                    </label>
+                  ))}
+                </div>
+                <ul className="mt-1 flex flex-col gap-1 text-[12.5px] text-ink-soft">
+                  {ruleLines(PRESETS[preset].rules).map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              </fieldset>
 
-        <Button type="submit" variant="primary" busy={busy}>
-          File the proposal
-        </Button>
-        <p className="text-[12px] text-ink-faint">You put down the {formatNear(ctx.bond)} NEAR bond. The DAO only sends the budget if the vote passes.</p>
-      </form>
+              <div className="flex gap-2">
+                <Button type="submit" variant="primary" busy={busy} className="flex-1">
+                  File the proposal
+                </Button>
+                <Button variant="ghost" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+              <p className="text-[12px] text-ink-faint">You put down the {formatNear(ctx.bond)} NEAR bond. The DAO only sends the budget if the vote passes.</p>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Panel>
   );
 }
@@ -636,7 +666,7 @@ function ManageCampaigns({ campaigns, ctx, canPropose, treasury }: { campaigns: 
   const [modal, setModal] = useState<{ kind: "top_up" | "close"; campaign: Campaign } | null>(null);
   if (!canPropose || campaigns.length === 0) return null;
   return (
-    <Panel title="Active campaigns">
+    <Panel title="Active campaigns" tone="gold">
       <ul className="flex flex-col divide-y divide-line">
         {campaigns.map((c) => (
           <li key={c.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">

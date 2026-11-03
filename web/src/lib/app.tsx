@@ -37,6 +37,9 @@ interface AppState {
 
 const AppContext = createContext<AppState | null>(null);
 
+/** How long a toast stays up. Errors stay longer so there's time to read them. */
+export const toastDuration = (tone: Toast["tone"]) => (tone === "error" ? 8000 : 5000);
+
 export function useApp(): AppState {
   const value = useContext(AppContext);
   if (!value) throw new Error("useApp outside AppProvider");
@@ -83,7 +86,7 @@ export function AppProvider({ config, children }: { config: AppConfig; children:
   const pushToast = useCallback((tone: Toast["tone"], text: string) => {
     const id = ++toastId.current;
     setToasts((all) => [...all, { id, tone, text }]);
-    window.setTimeout(() => setToasts((all) => all.filter((t) => t.id !== id)), tone === "error" ? 8000 : 5000);
+    window.setTimeout(() => setToasts((all) => all.filter((t) => t.id !== id)), toastDuration(tone));
   }, []);
 
   const dismissToast = useCallback((id: number) => setToasts((all) => all.filter((t) => t.id !== id)), []);

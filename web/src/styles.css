@@ -1,37 +1,54 @@
 @import "tailwindcss";
 
-/* Herald design tokens. Colors are heraldic tinctures; every component reads these variables. */
+/*
+ * Herald design tokens. Colors are heraldic tinctures, and each one has a job:
+ * azure is the product, or (gold) is automatic payouts, purpure is the DAO vote,
+ * vert is money paid, gules is a veto. Every component reads these variables.
+ */
 :root {
   --tincture-azure: #2747c9;
   --tincture-or: #d99a16;
+  --tincture-purpure: #6b3fb8;
   --tincture-vert: #1e7f55;
   --tincture-gules: #c2362f;
-  --tincture-sable: #14161c;
-  --tincture-argent: #f5f6f8;
+  --tincture-sable: #12141b;
+  --tincture-argent: #f4f6fa;
 
   --page: var(--tincture-argent);
   --surface: #ffffff;
-  --surface-sunk: #eceef3;
+  --surface-sunk: #edf0f6;
   --ink: var(--tincture-sable);
-  --ink-soft: #4a5060;
-  --ink-faint: #6c7282;
-  --line: #dde0e7;
-  --line-strong: #c4c9d4;
+  --ink-soft: #464c5c;
+  --ink-faint: #626a7e;
+  --line: #dfe3eb;
+  --line-strong: #c6ccd8;
 
   --accent: var(--tincture-azure);
-  --accent-strong: #1c35a0;
-  --accent-wash: #e7ebfb;
+  --accent-strong: #1b34a3;
+  --accent-wash: #e8ecfc;
   --on-accent: #ffffff;
   --gold: var(--tincture-or);
   --gold-ink: #7a5306;
-  --gold-wash: #fbf1dc;
+  --gold-wash: #fcf2dc;
+  --on-gold: var(--tincture-sable);
+  --dao: var(--tincture-purpure);
+  --dao-ink: #4f2a90;
+  --dao-wash: #efe8fb;
   --paid: var(--tincture-vert);
-  --paid-ink: #155c3d;
-  --paid-wash: #e2f2ea;
+  --paid-ink: #145a3c;
+  --paid-wash: #e1f3ea;
   --veto: var(--tincture-gules);
   --veto-ink: #962620;
-  --veto-wash: #f9e4e3;
-  --dao: var(--tincture-sable);
+  --veto-wash: #fae5e3;
+
+  /* The hero's tabard: an azure field with gold trim. */
+  --tabard: #2342b8;
+  --tabard-deep: #172b80;
+  --on-tabard: #ffffff;
+  --on-tabard-soft: #d4dcff;
+
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 2px 10px -4px rgb(16 24 40 / 0.08);
+  --shadow-pop: 0 18px 40px -16px rgb(16 24 40 / 0.32);
 
   --font-display: "Gloock", Georgia, "Times New Roman", serif;
   --font-body: "Public Sans", ui-sans-serif, system-ui, sans-serif;
@@ -40,66 +57,78 @@
   --radius-sm: 6px;
   --radius: 10px;
   --radius-lg: 16px;
+  --radius-xl: 24px;
 
-  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --dur-ui: 180ms;
-  --dur-hero: 820ms;
-
-  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 38%, transparent);
   color-scheme: light;
 }
 
+/* Dark mode keeps the tinctures but sets them on a navy-black field instead of flat gray. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --page: #0e1014;
-    --surface: #161922;
-    --surface-sunk: #1d212b;
-    --ink: #f1f2f5;
-    --ink-soft: #b6bbc7;
-    --ink-faint: #8b91a1;
-    --line: #272c37;
-    --line-strong: #363c4a;
-    --accent: #7d93ff;
-    --accent-strong: #a3b3ff;
-    --accent-wash: #1d2547;
-    --on-accent: #0e1014;
-    --gold: #e9b33f;
-    --gold-ink: #f3cf7e;
-    --gold-wash: #3a2c0d;
-    --paid: #3cb984;
-    --paid-ink: #8fe0bb;
-    --paid-wash: #0f3022;
-    --veto: #ec6a62;
-    --veto-ink: #f6aaa5;
-    --veto-wash: #3d1614;
-    --dao: #f1f2f5;
+    --page: #0b0e17;
+    --surface: #121726;
+    --surface-sunk: #1a2033;
+    --ink: #eef1f8;
+    --ink-soft: #b3bacb;
+    --ink-faint: #8790a6;
+    --line: #232a40;
+    --line-strong: #323b56;
+    --accent: #8197ff;
+    --accent-strong: #aebcff;
+    --accent-wash: #1b2552;
+    --on-accent: #0b0e17;
+    --gold: #ebb443;
+    --gold-ink: #f5d27f;
+    --gold-wash: #382a0c;
+    --dao: #b596f7;
+    --dao-ink: #d6c6fc;
+    --dao-wash: #2a1f4a;
+    --paid: #3fbf88;
+    --paid-ink: #93e3bf;
+    --paid-wash: #0e2f22;
+    --veto: #ef6b63;
+    --veto-ink: #f7afa9;
+    --veto-wash: #3c1715;
+    --tabard: #1c2c78;
+    --tabard-deep: #10194a;
+    --on-tabard-soft: #c9d2ff;
+    --shadow-card: 0 0 0 transparent;
+    --shadow-pop: 0 20px 44px -16px rgb(0 0 0 / 0.7);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --page: #0e1014;
-  --surface: #161922;
-  --surface-sunk: #1d212b;
-  --ink: #f1f2f5;
-  --ink-soft: #b6bbc7;
-  --ink-faint: #8b91a1;
-  --line: #272c37;
-  --line-strong: #363c4a;
-  --accent: #7d93ff;
-  --accent-strong: #a3b3ff;
-  --accent-wash: #1d2547;
-  --on-accent: #0e1014;
-  --gold: #e9b33f;
-  --gold-ink: #f3cf7e;
-  --gold-wash: #3a2c0d;
-  --paid: #3cb984;
-  --paid-ink: #8fe0bb;
-  --paid-wash: #0f3022;
-  --veto: #ec6a62;
-  --veto-ink: #f6aaa5;
-  --veto-wash: #3d1614;
-  --dao: #f1f2f5;
+  --page: #0b0e17;
+  --surface: #121726;
+  --surface-sunk: #1a2033;
+  --ink: #eef1f8;
+  --ink-soft: #b3bacb;
+  --ink-faint: #8790a6;
+  --line: #232a40;
+  --line-strong: #323b56;
+  --accent: #8197ff;
+  --accent-strong: #aebcff;
+  --accent-wash: #1b2552;
+  --on-accent: #0b0e17;
+  --gold: #ebb443;
+  --gold-ink: #f5d27f;
+  --gold-wash: #382a0c;
+  --dao: #b596f7;
+  --dao-ink: #d6c6fc;
+  --dao-wash: #2a1f4a;
+  --paid: #3fbf88;
+  --paid-ink: #93e3bf;
+  --paid-wash: #0e2f22;
+  --veto: #ef6b63;
+  --veto-ink: #f7afa9;
+  --veto-wash: #3c1715;
+  --tabard: #1c2c78;
+  --tabard-deep: #10194a;
+  --on-tabard-soft: #c9d2ff;
+  --shadow-card: 0 0 0 transparent;
+  --shadow-pop: 0 20px 44px -16px rgb(0 0 0 / 0.7);
   color-scheme: dark;
 }
 
@@ -119,19 +148,28 @@
   --color-gold: var(--gold);
   --color-gold-ink: var(--gold-ink);
   --color-gold-wash: var(--gold-wash);
+  --color-on-gold: var(--on-gold);
+  --color-dao: var(--dao);
+  --color-dao-ink: var(--dao-ink);
+  --color-dao-wash: var(--dao-wash);
   --color-paid: var(--paid);
   --color-paid-ink: var(--paid-ink);
   --color-paid-wash: var(--paid-wash);
   --color-veto: var(--veto);
   --color-veto-ink: var(--veto-ink);
   --color-veto-wash: var(--veto-wash);
-  --color-dao: var(--dao);
+  --color-tabard: var(--tabard);
+  --color-on-tabard: var(--on-tabard);
+  --color-on-tabard-soft: var(--on-tabard-soft);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-data: var(--font-data);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius);
   --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
 }
 
 html {
@@ -146,6 +184,12 @@ body {
   margin: 0;
   min-height: 100vh;
   background: var(--page);
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
 :focus-visible {
@@ -163,30 +207,71 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* The seal stamps down once when it first appears. */
-@keyframes seal-stamp {
-  0% { opacity: 0; transform: scale(1.35) rotate(-14deg); }
-  60% { opacity: 1; transform: scale(0.94) rotate(-6deg); }
-  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
-}
-.seal-stamp {
-  animation: seal-stamp var(--dur-hero) var(--ease-out) both;
+/* Every tincture in one thin band across the top of the app: the brand in a single line. */
+.tincture-band {
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--tincture-azure) 0 34%,
+    var(--tincture-or) 34% 56%,
+    var(--tincture-purpure) 56% 74%,
+    var(--tincture-vert) 74% 90%,
+    var(--tincture-gules) 90% 100%
+  );
 }
 
-@keyframes rise-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/*
+ * The tabard: an azure field with a faint lozenge diaper, a touch of purpure in one corner
+ * and a gold hairline inside the edge, like the trim on a herald's coat.
+ */
+.tabard {
+  position: relative;
+  isolation: isolate;
+  color: var(--on-tabard);
+  background-color: var(--tabard);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='white' stroke-opacity='0.07'/%3E%3C/svg%3E"),
+    radial-gradient(110% 90% at 100% 0%, color-mix(in srgb, var(--tincture-purpure) 42%, transparent) 0%, transparent 60%),
+    radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--tincture-or) 16%, transparent) 0%, transparent 65%),
+    linear-gradient(160deg, var(--tabard) 0%, var(--tabard-deep) 100%);
+  border-radius: var(--radius-xl);
 }
-.rise-in {
-  animation: rise-in 420ms var(--ease-out) both;
+.tabard::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px solid color-mix(in srgb, var(--tincture-or) 50%, transparent);
+  border-radius: calc(var(--radius-xl) - 10px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* The same lozenge diaper, in ink, for light stages like the payout story. */
+.diaper {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='%23000' stroke-opacity='0.05'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"] .diaper {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='white' stroke-opacity='0.06'/%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .diaper {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='white' stroke-opacity='0.06'/%3E%3C/svg%3E");
+  }
+}
+
+/* A soft wash of one tincture behind a page header. */
+.page-wash {
+  position: absolute;
+  inset: -72px -8% auto;
+  height: 320px;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(closest-side at 24% 50%, color-mix(in srgb, var(--wash-tone) 16%, transparent), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .seal-stamp,
-  .rise-in {
-    animation: none;
-  }
   * {
     transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
   }
 }

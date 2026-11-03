@@ -1,7 +1,9 @@
+import { AnimatePresence, motion } from "motion/react";
 import { useId } from "react";
 import { useApp, useChainNow } from "../lib/app";
 import { formatCountdown, formatDate, formatNear, formatRelative } from "../lib/format";
 import type { Route, SubmissionStatus, Tier } from "../lib/herald";
+import { ease, quick, stampSpring } from "../lib/motion";
 import { href } from "../lib/router";
 
 export function Near({ value, className = "" }: { value: string | bigint; className?: string }) {
@@ -15,9 +17,9 @@ export function Near({ value, className = "" }: { value: string | bigint; classN
 const avatarTones = [
   "bg-accent-wash text-accent-strong",
   "bg-gold-wash text-gold-ink",
+  "bg-dao-wash text-dao-ink",
   "bg-paid-wash text-paid-ink",
   "bg-veto-wash text-veto-ink",
-  "bg-sunk text-ink-soft",
 ];
 
 function hash(text: string): number {
@@ -47,7 +49,7 @@ export function AccountLink({ accountId, showId = false }: { accountId: string; 
   const isDao = accountId === config.dao;
   const label = (
     <>
-      <span className="font-medium text-ink">{name}</span>
+      <span className="font-medium text-ink transition-colors">{name}</span>
       {showId && name !== accountId && <span className="font-data text-[12px] text-ink-faint">{accountId}</span>}
     </>
   );
@@ -59,10 +61,11 @@ export function AccountLink({ accountId, showId = false }: { accountId: string; 
   );
 }
 
-const routeStyle: Record<Route, { ring: string; ink: string; label: string; around: string }> = {
-  Auto: { ring: "var(--gold)", ink: "var(--gold-ink)", label: "Auto", around: "PAID · AUTO APPROVAL · PAID · AUTO APPROVAL · " },
-  Reviewer: { ring: "var(--accent)", ink: "var(--accent-strong)", label: "Reviewer", around: "PAID · REVIEWER APPROVAL · PAID · REVIEWER · " },
-  Dao: { ring: "var(--dao)", ink: "var(--dao)", label: "DAO vote", around: "PAID · DAO VOTE · PAID · DAO VOTE · PAID · DAO · " },
+/** Each route owns a tincture: gold for automatic, azure for a reviewer, purpure for the DAO. */
+const routeStyle: Record<Route, { ring: string; ink: string; wash: string; label: string; around: string }> = {
+  Auto: { ring: "var(--gold)", ink: "var(--gold-ink)", wash: "var(--gold-wash)", label: "Auto", around: "PAID · AUTO APPROVAL · PAID · AUTO APPROVAL · " },
+  Reviewer: { ring: "var(--accent)", ink: "var(--accent-strong)", wash: "var(--accent-wash)", label: "Reviewer", around: "PAID · REVIEWER APPROVAL · PAID · REVIEWER · " },
+  Dao: { ring: "var(--dao)", ink: "var(--dao-ink)", wash: "var(--dao-wash)", label: "DAO vote", around: "PAID · DAO VOTE · PAID · DAO VOTE · PAID · DAO · " },
 };
 
 function RouteIcon({ route }: { route: Route }) {
@@ -79,7 +82,8 @@ function RouteIcon({ route }: { route: Route }) {
 
 /**
  * Herald's signature element: every payout is stamped with the route that approved it,
- * like the seal on a herald's message.
+ * like the seal on a herald's message. When `stamp` is set it lands with a spring and
+ * leaves a ring of ink.
  */
 export function Seal({
   route,
@@ -97,29 +101,47 @@ export function Seal({
 }) {
   const style = routeStyle[route];
   const id = `seal-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
+  const delay = delayMs / 1000;
   return (
-    <svg
+    <motion.svg
       viewBox="0 0 100 100"
       width={size}
       height={size}
+      overflow="visible"
       role={decorative ? undefined : "img"}
       aria-hidden={decorative || undefined}
       aria-label={decorative ? undefined : `Paid by ${style.label.toLowerCase()} approval`}
-      className={`shrink-0 ${stamp ? "seal-stamp" : ""}`}
-      style={{ transform: "rotate(-8deg)", animationDelay: `${delayMs}ms` }}
+      className="shrink-0"
+      initial={stamp ? { opacity: 0, scale: 1.5, rotate: -24 } : false}
+      animate={{ opacity: 1, scale: 1, rotate: -8 }}
+      transition={{ ...stampSpring, delay, opacity: { duration: 0.12, delay } }}
     >
       <defs>
         <path id={id} d="M50 50 m-36 0 a36 36 0 1 1 72 0 a36 36 0 1 1 -72 0" />
       </defs>
+      {stamp && (
+        <motion.circle
+          cx="50"
+          cy="50"
+          r="46"
+          fill="none"
+          stroke={style.ring}
+          strokeWidth="2"
+          initial={{ opacity: 0, scale: 0.94 }}
+          animate={{ opacity: [0, 0.6, 0], scale: [0.94, 1.02, 1.42] }}
+          transition={{ delay: delay + 0.14, duration: 0.75, ease }}
+        />
+      )}
       <circle cx="50" cy="50" r="46" fill="var(--surface)" stroke={style.ring} strokeWidth="3" />
-      <circle cx="50" cy="50" r="27" fill="none" stroke={style.ring} strokeWidth="1" strokeDasharray="2.5 2.5" />
+      <circle cx="50" cy="50" r="40" fill={style.wash} />
+      <circle cx="50" cy="50" r="27" fill="var(--surface)" stroke={style.ring} strokeWidth="1" strokeDasharray="2.5 2.5" />
       <text fill={style.ink} fontSize="8.2" fontFamily="var(--font-data)" letterSpacing="1.2">
         <textPath href={`#${id}`}>{style.around}</textPath>
       </text>
       <svg x="36" y="36" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={style.ink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <RouteIcon route={route} />
       </svg>
-    </svg>
+    </motion.svg>
   );
 }
 
@@ -139,48 +161,71 @@ export function Countdown({ endsAtMs }: { endsAtMs: number }) {
   const now = useChainNow();
   const left = endsAtMs - now;
   if (left <= 0) return <span>ready to pay</span>;
+  const urgent = left < 10_000;
   return (
-    <span className="font-data" aria-label={`${Math.ceil(left / 1000)} seconds left`}>
+    <motion.span
+      className="font-data"
+      aria-label={`${Math.ceil(left / 1000)} seconds left`}
+      animate={urgent ? { opacity: [1, 0.45, 1] } : { opacity: 1 }}
+      transition={urgent ? { duration: 1, repeat: Infinity } : quick}
+    >
       {formatCountdown(left)}
-    </span>
+    </motion.span>
+  );
+}
+
+/** "Pays in 02:41", then "Ready to pay" once the public window has closed. */
+function PaysIn({ endsAtMs }: { endsAtMs: number }) {
+  const now = useChainNow();
+  if (endsAtMs <= now) return <>Ready to pay</>;
+  return (
+    <>
+      Pays in <Countdown endsAtMs={endsAtMs} />
+    </>
   );
 }
 
 const chip: Record<SubmissionStatus, { text: string; cls: string }> = {
   Pending: { text: "Waiting for review", cls: "bg-accent-wash text-accent-strong" },
-  Challenge: { text: "Auto-approved", cls: "bg-gold-wash text-gold-ink" },
-  AwaitingDao: { text: "Waiting for DAO vote", cls: "border border-line-strong text-ink" },
+  Challenge: { text: "Pays automatically", cls: "bg-gold-wash text-gold-ink" },
+  AwaitingDao: { text: "Waiting for DAO vote", cls: "bg-dao-wash text-dao-ink" },
   Approved: { text: "Payout to retry", cls: "border border-gold text-gold-ink" },
   Paid: { text: "Paid", cls: "bg-paid-wash text-paid-ink" },
   Rejected: { text: "Rejected", cls: "bg-sunk text-ink-soft" },
   Vetoed: { text: "Vetoed", cls: "bg-veto-wash text-veto-ink" },
 };
 
+/** Status of a submission. When it changes, the old chip fades out and the new one rises in. */
 export function StatusChip({ status, endsAtMs }: { status: SubmissionStatus; endsAtMs?: number | null }) {
   const c = chip[status];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-[12.5px] font-medium whitespace-nowrap ${c.cls}`}>
-      {c.text}
-      {status === "Challenge" && endsAtMs != null && (
-        <>
-          <span aria-hidden="true">·</span>
-          <Countdown endsAtMs={endsAtMs} />
-        </>
-      )}
-    </span>
+    <AnimatePresence initial={false} mode="wait">
+      <motion.span
+        key={status}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={quick}
+        className={`inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-[12.5px] font-medium whitespace-nowrap ${c.cls}`}
+      >
+        {status === "Challenge" && endsAtMs != null ? <PaysIn endsAtMs={endsAtMs} /> : c.text}
+      </motion.span>
+    </AnimatePresence>
   );
 }
 
 const tierChevrons: Record<Tier, number> = { Newcomer: 1, Trusted: 2, Core: 3 };
 
+/** Rank as stacked chevrons. Core, the top rank, is struck in gold. */
 export function RankBadge({ tier, size = "md" }: { tier: Tier; size?: "sm" | "md" }) {
   const count = tierChevrons[tier];
   const dim = size === "sm" ? "size-3" : "size-4";
+  const lit = tier === "Core" ? "text-gold" : "text-accent";
   return (
     <span className={`inline-flex items-center gap-1.5 font-medium ${size === "sm" ? "text-[12.5px]" : "text-sm"} text-ink`}>
       <span className="inline-flex flex-col -space-y-1.5" aria-hidden="true">
         {Array.from({ length: 3 }, (_, i) => (
-          <svg key={i} viewBox="0 0 24 24" className={`${dim} ${3 - i <= count ? "text-accent" : "text-line-strong"}`} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <svg key={i} viewBox="0 0 24 24" className={`${dim} ${3 - i <= count ? lit : "text-line-strong"}`} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <path d="m5 15 7-7 7 7" />
           </svg>
         ))}
@@ -190,6 +235,7 @@ export function RankBadge({ tier, size = "md" }: { tier: Tier; size?: "sm" | "md
   );
 }
 
+/** Budget as one bar: paid in vert, reserved in gold, the rest empty. Fills in when it appears. */
 export function BudgetBar({ budget, paid, reserved, compact = false }: { budget: string; paid: string; reserved: string; compact?: boolean }) {
   const total = BigInt(budget);
   const pct = (part: string) => (total > 0n ? Number((BigInt(part) * 10000n) / total) / 100 : 0);
@@ -201,8 +247,8 @@ export function BudgetBar({ budget, paid, reserved, compact = false }: { budget:
         role="img"
         aria-label={`${formatNear(paid)} NEAR paid, ${formatNear(reserved)} NEAR reserved, ${formatNear(available)} NEAR available of ${formatNear(budget)} NEAR`}
       >
-        <span className="h-full bg-paid" style={{ width: `${pct(paid)}%` }} />
-        <span className="h-full bg-gold" style={{ width: `${pct(reserved)}%` }} />
+        <motion.span className="h-full bg-paid" initial={{ width: 0 }} animate={{ width: `${pct(paid)}%` }} transition={{ duration: 0.9, ease }} />
+        <motion.span className="h-full bg-gold" initial={{ width: 0 }} animate={{ width: `${pct(reserved)}%` }} transition={{ duration: 0.9, ease, delay: 0.12 }} />
       </div>
       {!compact && (
         <dl className="flex flex-wrap gap-x-6 gap-y-1 text-[13px]">

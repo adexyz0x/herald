@@ -1,14 +1,22 @@
+import { AnimatePresence } from "motion/react";
 import { useMemo, useState } from "react";
-import { BudgetBar, Near, RankBadge, Seal, When } from "../components/chain";
+import { BudgetBar, Near, RankBadge, RouteTag, Seal, When } from "../components/chain";
 import { SubmissionRow } from "../components/SubmissionRow";
-import { Button, EmptyState, ExternalLink, Field, LinkButton, Panel, inputClass } from "../components/ui";
+import { Button, EmptyState, ExternalLink, Field, LinkButton, PageHeader, Panel, SectionTitle, Segmented, inputClass } from "../components/ui";
 import { useApp, useChainData } from "../lib/app";
 import { formatDuration, formatNear, parseNear } from "../lib/format";
 import { useDaoContext } from "../lib/hooks";
 import { OPEN_STATUSES, previewRoute, ruleLines, type Campaign, type Route, type TierView } from "../lib/herald";
+import { CountUp, formatNearNumber, nearNumber } from "../lib/motion";
 import { href } from "../lib/router";
 
 type Filter = "All" | "Open" | "Paid" | "Declined";
+const FILTERS = [
+  ["All", "All"],
+  ["Open", "Open"],
+  ["Paid", "Paid"],
+  ["Declined", "Declined"],
+] as const;
 
 export function CampaignPage({ id }: { id: number }) {
   const { herald, actor, config } = useApp();
@@ -42,16 +50,28 @@ export function CampaignPage({ id }: { id: number }) {
     pending: submissions.data?.filter((s) => s.status === "Pending").length ?? 0,
     challenge: submissions.data?.filter((s) => s.status === "Challenge").length ?? 0,
   };
+  // Creators see which route each deliverable would take for them right now.
+  const forYou = actor.kind !== "guest" && !isReviewer && !isCouncil && tier.data && !tier.data.banned ? tier.data : null;
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <a href={href.home} className="text-[13px] text-ink-faint hover:text-ink">
-          ← All campaigns
-        </a>
-        <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-[clamp(34px,4.6vw,56px)] leading-[1.05]">{c.title}</h1>
+      <PageHeader
+        title={c.title}
+        tone="gold"
+        back={
+          <a href={href.home} className="text-[13px] text-ink-faint transition-colors hover:text-ink">
+            ← All campaigns
+          </a>
+        }
+        aside={
+          <div className="flex items-center gap-3">
+            <span className={`rounded-sm px-2 py-1 text-[12.5px] font-medium ${c.status === "Active" ? "bg-paid-wash text-paid-ink" : "bg-sunk text-ink-soft"}`}>{c.status}</span>
+            <ExternalLink href={c.brief_url} className="text-sm">
+              Read the brief
+            </ExternalLink>
+          </div>
+        }
+      >
             <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
               <span>
                 Funded by <span className="font-medium text-ink">{c.dao === config.dao ? config.daoName : c.dao}</span>
@@ -62,19 +82,17 @@ export function CampaignPage({ id }: { id: number }) {
                 Launched <When ms={c.created_at_ms} />
               </span>
             </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className={`rounded-sm px-2 py-1 text-[12.5px] font-medium ${c.status === "Active" ? "bg-paid-wash text-paid-ink" : "bg-sunk text-ink-soft"}`}>{c.status}</span>
-            <ExternalLink href={c.brief_url} className="text-sm">
-              Read the brief
-            </ExternalLink>
-          </div>
-        </div>
-      </div>
+      </PageHeader>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-8">
-          <Panel title="Budget">
+          <Panel title="Budget" tone="gold">
+            <p className="mb-4 flex flex-wrap items-baseline gap-x-2">
+              <span className="font-data text-[34px] leading-none text-ink">
+                <CountUp value={nearNumber(c.available)} format={formatNearNumber} />
+              </span>
+              <span className="text-sm text-ink-soft">NEAR available to pay out</span>
+            </p>
             <BudgetBar budget={c.budget} paid={c.paid} reserved={c.reserved} />
             <p className="mt-3 text-[13px] text-ink-faint">Reserved funds cover payouts in their challenge window or waiting on a retry. Closing the campaign returns everything unreserved to the DAO.</p>
           </Panel>
@@ -85,6 +103,7 @@ export function CampaignPage({ id }: { id: number }) {
                 <thead>
                   <tr className="text-left text-[12.5px] text-ink-faint">
                     <th className="pb-2 font-medium">Deliverable</th>
+                    {forYou && <th className="pb-2 font-medium">For you</th>}
                     <th className="pb-2 text-right font-medium">Pays</th>
                   </tr>
                 </thead>
@@ -92,6 +111,11 @@ export function CampaignPage({ id }: { id: number }) {
                   {c.rate_card.map((line) => (
                     <tr key={line.name} className="border-t border-line">
                       <td className="py-2.5">{line.name}</td>
+                      {forYou && (
+                        <td className="py-2.5">
+                          <RouteTag route={previewRoute(c.rules, forYou.tier, BigInt(line.amount), false)} />
+                        </td>
+                      )}
                       <td className="py-2.5 text-right">
                         <Near value={line.amount} />
                       </td>
@@ -105,33 +129,20 @@ export function CampaignPage({ id }: { id: number }) {
             </Panel>
           </div>
 
-          <section>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold">Activity</h2>
-              <div role="group" aria-label="Filter activity" className="flex rounded-md border border-line bg-surface p-0.5">
-                {(["All", "Open", "Paid", "Declined"] as Filter[]).map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    aria-pressed={filter === f}
-                    onClick={() => setFilter(f)}
-                    className="rounded-[5px] px-3 py-1.5 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink aria-pressed:bg-ink aria-pressed:text-page"
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mt-3 rounded-lg border border-line bg-surface px-5">
+          <section className="flex flex-col gap-3">
+            <SectionTitle title="Activity" count={list.length} tone="accent" action={<Segmented label="Filter activity" options={FILTERS} value={filter} onChange={setFilter} />} />
+            <div className="rounded-lg border border-line bg-surface px-5 shadow-card">
               {list.length === 0 ? (
                 <div className="py-5">
                   <EmptyState title="Nothing here yet" body={filter === "All" ? "Submitted work shows up here the moment it's on chain." : "No submissions match this filter."} />
                 </div>
               ) : (
                 <ul>
-                  {list.map((s) => (
-                    <SubmissionRow key={s.id} sub={s} campaign={c} ctx={ctx} />
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {list.map((s) => (
+                      <SubmissionRow key={s.id} sub={s} campaign={c} ctx={ctx} />
+                    ))}
+                  </AnimatePresence>
                 </ul>
               )}
             </div>
@@ -140,11 +151,11 @@ export function CampaignPage({ id }: { id: number }) {
 
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
           {actor.kind === "guest" ? (
-            <Panel title="Join this campaign">
+            <Panel title="Join this campaign" tone="accent">
               <p className="text-sm text-ink-soft">Choose who you are with the switcher at the top: a creator to submit work, a reviewer to approve it, or a council member to run the DAO side.</p>
             </Panel>
           ) : isReviewer ? (
-            <Panel title="You review this campaign">
+            <Panel title="You review this campaign" tone="accent">
               <p className="text-sm text-ink-soft">
                 {counts.pending} waiting for review, {counts.challenge} in a challenge window you can veto.
               </p>
@@ -163,7 +174,7 @@ export function CampaignPage({ id }: { id: number }) {
             </>
           )}
           {isCouncil && (
-            <Panel title="You're on the council">
+            <Panel title="You're on the council" tone="dao">
               <p className="text-sm text-ink-soft">Top-ups and closing this campaign go through DAO votes, and so do payouts above the reviewer limit. Council members vote on payouts, so they don't submit work here.</p>
               <div className="mt-4">
                 <LinkButton href={href.council} size="sm">
@@ -201,7 +212,7 @@ function StandingCard({ tier, campaign }: { tier: TierView; campaign: Campaign }
   const next = tier.next_tier_at;
   const progress = next ? Math.min(100, Math.round((tier.points / next) * 100)) : 100;
   return (
-    <Panel title="Your standing">
+    <Panel title="Your standing" tone={tier.tier === "Core" ? "gold" : "accent"}>
       <div className="flex items-center justify-between">
         <RankBadge tier={tier.tier} />
         <span className="font-data text-sm text-ink-soft">{tier.points} pts</span>
@@ -211,7 +222,7 @@ function StandingCard({ tier, campaign }: { tier: TierView; campaign: Campaign }
       ) : (
         <>
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-sunk" aria-hidden="true">
-            <span className="block h-full bg-accent" style={{ width: `${progress}%` }} />
+            <span className={`block h-full ${tier.tier === "Core" ? "bg-gold" : "bg-accent"}`} style={{ width: `${progress}%` }} />
           </div>
           <p className="mt-2 text-[13px] text-ink-faint">
             {next ? `${next - tier.points} more paid deliverable${next - tier.points === 1 ? "" : "s"} to ${tier.tier === "Newcomer" ? "Trusted" : "Core"}.` : "Top rank with this DAO."}{" "}
@@ -267,7 +278,7 @@ function SubmitForm({ campaign, tier, open }: { campaign: Campaign; tier: TierVi
   }
 
   return (
-    <Panel title="Submit your work">
+    <Panel title="Submit your work" tone="gold">
       {tier?.banned ? (
         <p className="text-sm text-ink-soft">Banned creators can't submit to this DAO's campaigns.</p>
       ) : full ? (

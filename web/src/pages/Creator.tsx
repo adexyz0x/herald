@@ -1,8 +1,11 @@
+import { AnimatePresence } from "motion/react";
+import type { CSSProperties } from "react";
 import { Avatar, Near, RankBadge, RouteTag, When } from "../components/chain";
 import { SubmissionRow, type RowContext } from "../components/SubmissionRow";
-import { EmptyState, LinkButton, Panel } from "../components/ui";
+import { EmptyState, LinkButton, Panel, SectionTitle } from "../components/ui";
 import { useApp, useChainData } from "../lib/app";
 import { formatNear } from "../lib/format";
+import { CountUp, formatNearNumber, nearNumber } from "../lib/motion";
 import { OPEN_STATUSES, autoLimit, tierFor, type Campaign, type Reputation, type Submission } from "../lib/herald";
 import { useDaoContext, useProgram } from "../lib/hooks";
 import { href } from "../lib/router";
@@ -78,7 +81,8 @@ export function CreatorPage({ accountId }: { accountId: string }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center gap-5">
+      <div className="relative isolate flex flex-wrap items-center gap-5">
+        <div className="page-wash" style={{ "--wash-tone": "var(--paid)" } as CSSProperties} aria-hidden="true" />
         <Avatar accountId={accountId} size={72} />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
@@ -103,15 +107,18 @@ export function CreatorPage({ accountId }: { accountId: string }) {
       ) : (
         <>
           {mine.length > 0 && (
-            <section aria-label="Totals" className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-4">
+            <section aria-label="Totals" className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line shadow-card sm:grid-cols-4">
               {[
-                { label: "Earned", value: `${formatNear(earned)} NEAR` },
-                { label: "Paid deliverables", value: paid.length },
-                { label: "Open now", value: open.length },
-                { label: "Vetoed", value: vetoed },
+                { label: "Earned", dot: "bg-paid", value: <CountUp value={nearNumber(earned)} format={(n) => `${formatNearNumber(n)} NEAR`} /> },
+                { label: "Paid deliverables", dot: "bg-gold", value: <CountUp value={paid.length} /> },
+                { label: "Open now", dot: "bg-accent", value: open.length },
+                { label: "Vetoed", dot: "bg-veto", value: vetoed },
               ].map((stat) => (
                 <div key={stat.label} className="flex flex-col gap-1 bg-surface px-5 py-4">
-                  <span className="text-[13px] text-ink-faint">{stat.label}</span>
+                  <span className="flex items-center gap-2 text-[13px] text-ink-faint">
+                    <span className={`size-2 rounded-full ${stat.dot}`} aria-hidden="true" />
+                    {stat.label}
+                  </span>
                   <span className="font-data text-[24px] leading-tight text-ink">{stat.value}</span>
                 </div>
               ))}
@@ -122,13 +129,15 @@ export function CreatorPage({ accountId }: { accountId: string }) {
             <div className="flex min-w-0 flex-col gap-10">
               {open.length > 0 && (
                 <section className="flex flex-col gap-3">
-                  <h2 className="text-lg font-semibold">Open submissions</h2>
-                  <div className="rounded-lg border border-line bg-surface px-5">
+                  <SectionTitle title="Open submissions" tone="accent" count={open.length} />
+                  <div className="rounded-lg border border-line bg-surface px-5 shadow-card">
                     <ul>
-                      {open.map((s) => {
-                        const campaign = campaignById.get(s.campaign_id);
-                        return campaign ? <SubmissionRow key={s.id} sub={s} campaign={campaign} ctx={rowCtx} showCampaign /> : null;
-                      })}
+                      <AnimatePresence initial={false}>
+                        {open.map((s) => {
+                          const campaign = campaignById.get(s.campaign_id);
+                          return campaign ? <SubmissionRow key={s.id} sub={s} campaign={campaign} ctx={rowCtx} showCampaign /> : null;
+                        })}
+                      </AnimatePresence>
                     </ul>
                   </div>
                 </section>
@@ -136,11 +145,8 @@ export function CreatorPage({ accountId }: { accountId: string }) {
 
               {mine.length > 0 && (
                 <section className="flex flex-col gap-3">
-                  <div>
-                    <h2 className="text-lg font-semibold">Points ledger</h2>
-                    <p className="mt-0.5 text-[13.5px] text-ink-soft">One point for every paid deliverable. Vetoes take points away. Rejections cost nothing.</p>
-                  </div>
-                  <div className="rounded-lg border border-line bg-surface px-5">
+                  <SectionTitle title="Points ledger" tone="paid" hint="One point for every paid deliverable. Vetoes take points away. Rejections cost nothing." />
+                  <div className="rounded-lg border border-line bg-surface px-5 shadow-card">
                     {entries.length === 0 ? (
                       <p className="py-5 text-sm text-ink-faint">Nothing decided yet.</p>
                     ) : (
@@ -156,11 +162,8 @@ export function CreatorPage({ accountId }: { accountId: string }) {
 
               {decisions.length > 0 && (
                 <section className="flex flex-col gap-3">
-                  <div>
-                    <h2 className="text-lg font-semibold">Decisions on the record</h2>
-                    <p className="mt-0.5 text-[13.5px] text-ink-soft">Reviewers answer for their calls too. Every approval, rejection and veto is public.</p>
-                  </div>
-                  <div className="rounded-lg border border-line bg-surface px-5">
+                  <SectionTitle title="Decisions on the record" tone="accent" count={decisions.length} hint="Reviewers answer for their calls too. Every approval, rejection and veto is public." />
+                  <div className="rounded-lg border border-line bg-surface px-5 shadow-card">
                     <ul>
                       {decisions.map((s) => (
                         <DecisionRow key={s.id} sub={s} campaign={campaignById.get(s.campaign_id)} />
@@ -186,14 +189,16 @@ export function CreatorPage({ accountId }: { accountId: string }) {
 function RecordCard({ dao, record, campaigns }: { dao: string; record?: Reputation; campaigns: Campaign[] }) {
   const { displayName } = useApp();
   return (
-    <Panel title={`Record with ${displayName(dao)}`}>
+    <Panel title={`Record with ${displayName(dao)}`} tone={record?.banned ? "veto" : "paid"}>
       {!record ? (
         <p className="text-sm text-ink-faint">Loading…</p>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex items-end justify-between">
             <span className="flex items-baseline gap-1.5">
-              <span className="font-data text-[34px] leading-none text-ink">{record.points}</span>
+              <span className="font-data text-[34px] leading-none text-ink">
+                <CountUp value={record.points} />
+              </span>
               <span className="text-sm text-ink-soft">points</span>
             </span>
             {record.banned && <span className="rounded-sm bg-veto-wash px-2 py-0.5 text-[12.5px] font-medium text-veto-ink">Banned</span>}

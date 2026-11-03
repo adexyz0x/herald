@@ -1,6 +1,7 @@
+import { AnimatePresence } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { SubmissionRow, type RowContext } from "../components/SubmissionRow";
-import { Panel } from "../components/ui";
+import { PageHeader, Panel, SectionTitle, Segmented, type Tone } from "../components/ui";
 import { useApp, useChainNow } from "../lib/app";
 import type { Campaign, Submission } from "../lib/herald";
 import { useDaoContext, useProgram } from "../lib/hooks";
@@ -41,63 +42,56 @@ export function ReviewPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-[clamp(34px,4.6vw,56px)] leading-[1.05]">Review queue</h1>
+      <PageHeader
+        title="Review queue"
+        tone="accent"
+        aside={
+          mine.length > 0 && (
+            <Segmented
+              label="Which campaigns"
+              options={[
+                ["mine", "Campaigns I review"],
+                ["all", "All campaigns"],
+              ]}
+              value={scope}
+              onChange={setScope}
+            />
+          )
+        }
+      >
           <p className="mt-2 max-w-[64ch] text-[15px] text-ink-soft">
             {mine.length > 0
               ? `You review ${mine.map((c) => c.title).join(", ")}. Approving pays the creator on the spot. A veto stops an automatic payout and costs the creator reputation.`
               : "Only reviewers the DAO appointed can approve or veto. Everyone can watch every decision, and anyone can send a payout once its public window has closed."}
           </p>
-        </div>
-        {mine.length > 0 && (
-          <div role="group" aria-label="Which campaigns" className="flex rounded-md border border-line bg-surface p-0.5">
-            {(
-              [
-                ["mine", "Campaigns I review"],
-                ["all", "All campaigns"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={scope === value}
-                onClick={() => setScope(value)}
-                className="rounded-[5px] px-3 py-1.5 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink aria-pressed:bg-ink aria-pressed:text-page"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      </PageHeader>
 
       {program.loading && !program.data ? (
         <p className="text-ink-faint">Loading the queue…</p>
       ) : (
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="flex min-w-0 flex-col gap-10">
-            <Section title="Waiting for review" count={pending.length} hint="Oldest first. Newcomers, custom amounts and anything above a creator's automatic limit land here." empty="Nothing is waiting. New submissions appear here the moment they're on chain.">
+            <Section title="Waiting for review" tone="accent" count={pending.length} hint="Oldest first. Newcomers, custom amounts and anything above a creator's automatic limit land here." empty="Nothing is waiting. New submissions appear here the moment they're on chain.">
               {list(pending)}
             </Section>
-            <Section title="Open challenge windows" count={inWindow.length} hint="Paid automatically when the timer runs out, unless a reviewer vetoes first. Ending soonest at the top." empty="No automatic payouts are waiting.">
+            <Section title="Paying automatically" tone="gold" count={inWindow.length} hint="Each one pays when its timer ends, unless a reviewer vetoes it first. Ending soonest at the top." empty="Nothing is waiting to pay automatically.">
               {list(inWindow)}
             </Section>
             {ready.length > 0 && (
-              <Section title="Ready to pay" count={ready.length} hint="Their windows have closed with no veto, or a transfer needs a retry. Anyone can send these.">
+              <Section title="Ready to pay" tone="paid" count={ready.length} hint="The timer ended with no veto, or a transfer needs a retry. Anyone can send these.">
                 {list(ready)}
               </Section>
             )}
-            <Section title="With the DAO" count={withDao.length} hint="Too large for one reviewer. These are paid only if the council votes yes." empty="Nothing is waiting on a DAO vote.">
+            <Section title="With the DAO" tone="dao" count={withDao.length} hint="Too large for one reviewer. These are paid only if the council votes yes." empty="Nothing is waiting on a DAO vote.">
               {list(withDao)}
             </Section>
-            <Section title="Recently decided" count={decided.length} empty="No decisions yet.">
+            <Section title="Recently decided" tone="ink" count={decided.length} empty="No decisions yet.">
               {list(decided)}
             </Section>
           </div>
 
           <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-            <Panel title="Reviewing well">
+            <Panel title="Reviewing well" tone="accent">
               <ol className="flex flex-col gap-3.5 text-[14px] text-ink-soft">
                 {[
                   ["Open the proof first.", "Check the post is live, public and on brief before you approve."],
@@ -122,17 +116,19 @@ export function ReviewPage() {
   );
 }
 
-function Section({ title, count, hint, empty, children }: { title: string; count: number; hint?: string; empty?: string; children: ReactNode }) {
+function Section({ title, tone, count, hint, empty, children }: { title: string; tone: Tone; count: number; hint?: string; empty?: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3" aria-label={title}>
-      <div>
-        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          {title}
-          <span className="font-data text-[14px] font-normal text-ink-faint">{count}</span>
-        </h2>
-        {hint && <p className="mt-0.5 max-w-[70ch] text-[13.5px] text-ink-soft">{hint}</p>}
-      </div>
-      <div className="rounded-lg border border-line bg-surface px-5">{count === 0 ? <p className="py-5 text-sm text-ink-faint">{empty}</p> : <ul>{children}</ul>}</div>
+      <SectionTitle title={title} tone={tone} count={count} hint={hint} />
+      {count === 0 ? (
+        <p className="text-sm text-ink-faint">{empty}</p>
+      ) : (
+        <div className="rounded-lg border border-line bg-surface px-5 shadow-card">
+          <ul>
+            <AnimatePresence initial={false}>{children}</AnimatePresence>
+          </ul>
+        </div>
+      )}
     </section>
   );
 }

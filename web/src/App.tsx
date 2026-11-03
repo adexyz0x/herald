@@ -1,8 +1,10 @@
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Shell, Wordmark } from "./components/Shell";
 import { EmptyState, LinkButton, Toasts } from "./components/ui";
 import { AppProvider, useApp, useChainData } from "./lib/app";
 import { loadConfig, type AppConfig } from "./lib/config";
+import { ease } from "./lib/motion";
 import { href, useRoute, type RouteMatch } from "./lib/router";
 import { CampaignPage } from "./pages/Campaign";
 import { CouncilPage } from "./pages/Council";
@@ -23,10 +25,13 @@ export function App() {
   if (error) return <SetupScreen missingDemo={error === "local-demo-missing"} detail={error} />;
   if (!config) return null;
   return (
-    <AppProvider config={config}>
-      <Routes />
-      <Toasts />
-    </AppProvider>
+    // Visitors who ask for less motion get fades instead of movement, everywhere.
+    <MotionConfig reducedMotion="user">
+      <AppProvider config={config}>
+        <Routes />
+        <Toasts />
+      </AppProvider>
+    </MotionConfig>
   );
 }
 
@@ -71,7 +76,16 @@ function Routes() {
   return (
     <Shell route={route}>
       <ChainCheck />
-      {page}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={window.location.hash || "#/"}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0, transition: { duration: 0.24, ease } }}
+          exit={{ opacity: 0, y: -4, transition: { duration: 0.12, ease } }}
+        >
+          {page}
+        </motion.div>
+      </AnimatePresence>
     </Shell>
   );
 }

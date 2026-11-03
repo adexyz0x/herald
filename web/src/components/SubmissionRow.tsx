@@ -1,6 +1,8 @@
+import { motion } from "motion/react";
 import { useState } from "react";
 import { useApp, useChainNow } from "../lib/app";
 import { formatNear } from "../lib/format";
+import { rowMotion } from "../lib/motion";
 import type { Campaign, Submission } from "../lib/herald";
 import { href } from "../lib/router";
 import { AccountLink, Avatar, Near, RankBadge, RouteTag, Seal, StatusChip, When } from "./chain";
@@ -49,6 +51,8 @@ export function SubmissionRow({
   const isCouncil = Boolean(me && ctx.council.includes(me));
   const windowOpen = sub.status === "Challenge" && sub.challenge_ends_at_ms != null && now < sub.challenge_ends_at_ms;
   const windowDone = sub.status === "Challenge" && !windowOpen;
+  // A payout that landed moments ago gets its seal stamped in front of you.
+  const justPaid = sub.status === "Paid" && sub.paid_at_ms != null && now - sub.paid_at_ms < 20_000;
 
   const actions: React.ReactNode[] = [];
   if (sub.status === "Pending" && isReviewer) {
@@ -109,7 +113,7 @@ export function SubmissionRow({
   }
 
   return (
-    <li className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 border-b border-line py-4 last:border-b-0 sm:grid-cols-[auto_minmax(0,1fr)_190px_210px] sm:items-center">
+    <motion.li {...rowMotion} className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 border-b border-line py-4 last:border-b-0 sm:grid-cols-[auto_minmax(0,1fr)_190px_210px] sm:items-center">
       <Avatar accountId={sub.creator} size={36} />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -145,7 +149,7 @@ export function SubmissionRow({
         )}
       </div>
       <div className="col-start-2 flex flex-wrap items-center gap-2 sm:col-start-auto sm:justify-end">
-        {sub.status === "Paid" ? <Seal route={sub.route} size={52} /> : actions}
+        {sub.status === "Paid" ? <Seal route={sub.route} size={52} stamp={justPaid} /> : actions}
       </div>
 
       <ReasonModal
@@ -167,7 +171,7 @@ export function SubmissionRow({
         onClose={() => setModal(null)}
         onConfirm={(reason) => execute(herald.reject(sub.id, reason), { success: "Submission rejected." })}
       />
-    </li>
+    </motion.li>
   );
 }
 
