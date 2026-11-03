@@ -1,16 +1,47 @@
-/** Minimal NEAR JSON-RPC client for reads. Writes go through `signer.ts`. */
+type RpcReply<T> = { result?: T; error?: { code?: number; message?: string; data?: string } };
+
+/**
+ * Minimal NEAR JSON-RPC client for reads. Writes go through `signer.ts`.
+ *
+ * Public endpoints rate-limit by IP, and an over-limit reply carries no CORS headers, so the
+ * browser sees a network error. Given several endpoints, a request that is refused, times out
+ * or can't connect moves on to the next one, and the client stays with whichever answered.
+ */
 export class Rpc {
-  constructor(readonly url: string) {}
+  private readonly urls: string[];
+  private current = 0;
+
+  constructor(urls: string | string[]) {
+    this.urls = typeof urls === "string" ? [urls] : urls;
+  }
 
   private async request<T>(method: string, params: unknown): Promise<T> {
-    const res = await fetch(this.url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: "herald", method, params }),
-    });
-    const body = await res.json();
-    if (body.error) throw new Error(body.error.data ?? body.error.message ?? "RPC error");
-    return body.result as T;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < this.urls.length; attempt++) {
+      const index = (this.current + attempt) % this.urls.length;
+      let body: RpcReply<T>;
+      try {
+        const res = await fetch(this.urls[index], {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: "herald", method, params }),
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (res.status === 429 || res.status >= 500) throw new Error(`RPC endpoint unavailable (${res.status})`);
+        body = await res.json();
+      } catch (error) {
+        lastError = error;
+        continue;
+      }
+      if (body.error?.code === -429) {
+        lastError = new Error(body.error.message ?? "Rate limited");
+        continue;
+      }
+      this.current = index;
+      if (body.error) throw new Error(body.error.data ?? body.error.message ?? "RPC error");
+      return body.result as T;
+    }
+    throw lastError instanceof Error ? lastError : new Error("No RPC endpoint answered");
   }
 
   /** Calls a view method and parses its JSON result. */

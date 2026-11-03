@@ -18,6 +18,8 @@ export interface Profile {
 export interface AppConfig {
   network: "local" | "testnet";
   rpcUrl: string;
+  /** More public endpoints to read from when `rpcUrl` refuses or rate-limits. */
+  rpcFallbacks?: string[];
   herald: string;
   dao: string;
   daoName: string;
@@ -46,6 +48,10 @@ export async function loadConfig(): Promise<AppConfig> {
     return {
       network: "testnet",
       rpcUrl: env.VITE_RPC_URL ?? "https://test.rpc.fastnear.com",
+      rpcFallbacks: (env.VITE_RPC_FALLBACKS ?? "")
+        .split(",")
+        .map((url: string) => url.trim())
+        .filter(Boolean),
       herald: env.VITE_HERALD_CONTRACT,
       dao: env.VITE_DAO_ACCOUNT,
       daoName: env.VITE_DAO_NAME ?? env.VITE_DAO_ACCOUNT,

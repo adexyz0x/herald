@@ -49,7 +49,7 @@ function LiveDot({ className = "bg-paid", beat }: { className?: string; beat?: n
   );
 }
 
-/** The latest block height, read every two seconds while the tab is visible. */
+/** The latest block height, read every four seconds while the tab is visible. */
 function useBlockHeight(): number | null {
   const { rpc } = useApp();
   const [height, setHeight] = useState<number | null>(null);
@@ -64,7 +64,7 @@ function useBlockHeight(): number | null {
         .catch(() => undefined);
     };
     read();
-    const timer = window.setInterval(read, 2000);
+    const timer = window.setInterval(read, 4000);
     return () => {
       cancelled = true;
       window.clearInterval(timer);

@@ -64,7 +64,7 @@ function readStoredActor(config: AppConfig): Actor {
 }
 
 export function AppProvider({ config, children }: { config: AppConfig; children: ReactNode }) {
-  const rpc = useMemo(() => new Rpc(config.rpcUrl), [config.rpcUrl]);
+  const rpc = useMemo(() => new Rpc([config.rpcUrl, ...(config.rpcFallbacks ?? [])]), [config.rpcUrl, config.rpcFallbacks]);
   const herald = useMemo(() => new HeraldClient(rpc, config.herald), [rpc, config.herald]);
   const dao = useMemo(() => new SputnikClient(rpc, config.dao), [rpc, config.dao]);
   const [actor, setActorState] = useState<Actor>(() => readStoredActor(config));
