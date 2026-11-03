@@ -68,7 +68,7 @@ const routeStyle: Record<Route, { ring: string; ink: string; wash: string; label
   Dao: { ring: "var(--dao)", ink: "var(--dao-ink)", wash: "var(--dao-wash)", label: "DAO vote", around: "PAID · DAO VOTE · PAID · DAO VOTE · PAID · DAO · " },
 };
 
-function RouteIcon({ route }: { route: Route }) {
+export function RouteIcon({ route }: { route: Route }) {
   if (route === "Auto") return <path d="M13 2 4 14h7l-1 8 9-12h-7z" />;
   if (route === "Reviewer")
     return (
@@ -111,7 +111,7 @@ export function Seal({
       role={decorative ? undefined : "img"}
       aria-hidden={decorative || undefined}
       aria-label={decorative ? undefined : `Paid by ${style.label.toLowerCase()} approval`}
-      className="shrink-0"
+      className="seal shrink-0"
       initial={stamp ? { opacity: 0, scale: 1.5, rotate: -24 } : false}
       animate={{ opacity: 1, scale: 1, rotate: -8 }}
       transition={{ ...stampSpring, delay, opacity: { duration: 0.12, delay } }}
@@ -135,13 +135,54 @@ export function Seal({
       <circle cx="50" cy="50" r="46" fill="var(--surface)" stroke={style.ring} strokeWidth="3" />
       <circle cx="50" cy="50" r="40" fill={style.wash} />
       <circle cx="50" cy="50" r="27" fill="var(--surface)" stroke={style.ring} strokeWidth="1" strokeDasharray="2.5 2.5" />
-      <text fill={style.ink} fontSize="8.2" fontFamily="var(--font-data)" letterSpacing="1.2">
-        <textPath href={`#${id}`}>{style.around}</textPath>
-      </text>
+      <g className="seal-ring">
+        <text fill={style.ink} fontSize="8.2" fontFamily="var(--font-data)" letterSpacing="1.2">
+          <textPath href={`#${id}`}>{style.around}</textPath>
+        </text>
+      </g>
       <svg x="36" y="36" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={style.ink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <RouteIcon route={route} />
       </svg>
     </motion.svg>
+  );
+}
+
+type StampTone = "veto" | "dao" | "ink";
+const stampColor: Record<StampTone, string> = { veto: "var(--veto)", dao: "var(--dao)", ink: "var(--ink-faint)" };
+
+/**
+ * A decision, stamped like the seal on a payout: VETOED in gules, PASSED in purpure, REJECTED in
+ * gray. With `stamp` it slams down and leaves a ring of ink. It is decorative, since a chip or
+ * text nearby always says the same thing in words.
+ */
+export function Stamp({ label, tone, stamp = false, delayMs = 0 }: { label: string; tone: StampTone; stamp?: boolean; delayMs?: number }) {
+  const color = stampColor[tone];
+  const delay = delayMs / 1000;
+  return (
+    <motion.span
+      aria-hidden="true"
+      className="relative inline-flex shrink-0 rounded-[6px] border-2 p-[2px] select-none"
+      style={{ borderColor: color, color }}
+      initial={stamp ? { opacity: 0, scale: 1.9, rotate: -18 } : false}
+      animate={{ opacity: 1, scale: 1, rotate: -7 }}
+      transition={{ ...stampSpring, delay, opacity: { duration: 0.1, delay } }}
+    >
+      {stamp && (
+        <motion.span
+          className="absolute -inset-[3px] rounded-[8px] border-2"
+          style={{ borderColor: color }}
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: [0, 0.5, 0], scale: [0.92, 1.04, 1.3] }}
+          transition={{ delay: delay + 0.12, duration: 0.7, ease }}
+        />
+      )}
+      <span
+        className="rounded-[3px] border py-[4px] pr-[0.4rem] pl-2 font-data text-[11.5px] leading-none font-semibold tracking-[0.18em] uppercase"
+        style={{ borderColor: `color-mix(in srgb, ${color} 55%, transparent)` }}
+      >
+        {label}
+      </span>
+    </motion.span>
   );
 }
 

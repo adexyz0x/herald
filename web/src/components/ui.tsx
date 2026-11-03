@@ -173,7 +173,14 @@ export function PageHeader({ title, tone, back, aside, children }: { title: Reac
       {back}
       <div className={`flex flex-wrap items-end justify-between gap-4 ${back ? "mt-3" : ""}`}>
         <div className="min-w-0">
-          <h1 className="font-display text-[clamp(34px,4.6vw,56px)] leading-[1.05] tracking-[-0.005em]">{title}</h1>
+          {/* The title rises out of its own mask, like the home headline. */}
+          <h1 className="font-display text-[clamp(34px,4.6vw,56px)] leading-[1.05] tracking-[-0.005em]">
+            <span className="block overflow-hidden pb-[0.06em]">
+              <motion.span className="block" initial={{ y: "105%" }} animate={{ y: "0%" }} transition={{ duration: 0.65, ease }}>
+                {title}
+              </motion.span>
+            </span>
+          </h1>
           {children}
         </div>
         {aside}

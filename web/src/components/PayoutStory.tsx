@@ -173,22 +173,49 @@ function StageFrame({ step, index, children }: { step: Step; index: number; chil
       <p className="relative mb-4 flex items-center gap-2 font-data text-[12.5px] text-ink-soft">
         <span className="size-2 rounded-full transition-colors duration-500" style={{ backgroundColor: ring[step.tone] }} />
         Step {index + 1} of {STEPS.length}
+        <span className="ml-auto flex gap-1">
+          {STEPS.map((s, i) => (
+            <span key={s.title} className="h-1 w-5 rounded-full transition-colors duration-500" style={{ backgroundColor: i <= index ? ring[s.tone] : "var(--line-strong)" }} />
+          ))}
+        </span>
       </p>
       <div className="relative">{children}</div>
     </div>
   );
 }
 
-/** Wide screens: one sticky stage whose card swaps as the reader moves from step to step. */
+/**
+ * Wide screens: one sticky stage. Each step's card is dealt onto it from a small deck, and the
+ * deck behind holds one card for every step still to come.
+ */
 function StickyStage({ index }: { index: number }) {
   const step = STEPS[index];
+  const remaining = STEPS.length - 1 - index;
   return (
     <StageFrame step={step} index={index}>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div key={index} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3, ease }}>
-          <StoryCard step={step} play />
-        </motion.div>
-      </AnimatePresence>
+      <div className="relative isolate">
+        {STEPS.slice(1).map((s, k) => (
+          <motion.div
+            key={s.title}
+            className="absolute inset-0 rounded-lg border border-line bg-surface shadow-card"
+            style={{ zIndex: -1 - k, transformOrigin: "50% 100%" }}
+            initial={false}
+            animate={{ opacity: k < remaining ? 1 : 0, y: (k + 1) * 8, scale: 1 - (k + 1) * 0.04 }}
+            transition={{ duration: 0.45, ease }}
+          />
+        ))}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 34, rotate: -2.5, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, rotate: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -18, rotate: 1.5, scale: 0.98, transition: { duration: 0.2, ease } }}
+            transition={{ type: "spring", stiffness: 300, damping: 26 }}
+          >
+            <StoryCard step={step} play />
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </StageFrame>
   );
 }
@@ -204,11 +231,26 @@ function StepText({ step, index, active, onActive }: { step: Step; index: number
 
   return (
     <li ref={ref} className="relative flex flex-col gap-5 pl-12 lg:min-h-[48vh] lg:justify-center">
+      {/* The marker of the step being read glows in its tincture, and pings once as it lights. */}
       <span
         aria-hidden="true"
-        className="absolute top-0 left-0 flex size-8 items-center justify-center rounded-full border-2 bg-page font-data text-[13px] transition-colors duration-300 lg:top-1/2 lg:-translate-y-1/2"
-        style={{ borderColor: active ? ring[step.tone] : "var(--line-strong)", color: active ? "var(--ink)" : "var(--ink-faint)" }}
+        className="absolute top-0 left-0 flex size-8 items-center justify-center rounded-full border-2 font-data text-[13px] transition-[border-color,color,background-color,box-shadow] duration-300 lg:top-1/2 lg:-translate-y-1/2"
+        style={{
+          borderColor: active ? ring[step.tone] : "var(--line-strong)",
+          color: active ? "var(--ink)" : "var(--ink-faint)",
+          backgroundColor: active ? wash[step.tone] : "var(--page)",
+          boxShadow: active ? `0 0 0 5px color-mix(in srgb, ${ring[step.tone]} 15%, transparent), 0 0 24px color-mix(in srgb, ${ring[step.tone]} 40%, transparent)` : "none",
+        }}
       >
+        {active && (
+          <motion.span
+            className="absolute -inset-[2px] rounded-full border-2"
+            style={{ borderColor: ring[step.tone] }}
+            initial={{ scale: 1, opacity: 0.7 }}
+            animate={{ scale: 1.9, opacity: 0 }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
+          />
+        )}
         {index + 1}
       </span>
       <div className="lg:-mt-1">

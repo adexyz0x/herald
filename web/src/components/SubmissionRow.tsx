@@ -5,7 +5,7 @@ import { formatNear } from "../lib/format";
 import { rowMotion } from "../lib/motion";
 import type { Campaign, Submission } from "../lib/herald";
 import { href } from "../lib/router";
-import { AccountLink, Avatar, Near, RankBadge, RouteTag, Seal, StatusChip, When } from "./chain";
+import { AccountLink, Avatar, Near, RankBadge, RouteTag, Seal, Stamp, StatusChip, When } from "./chain";
 import { ActionButton, Button, ExternalLink, Field, Modal, inputClass } from "./ui";
 
 /** Reasons reviewers reach for most. Free text is always available too. */
@@ -51,8 +51,9 @@ export function SubmissionRow({
   const isCouncil = Boolean(me && ctx.council.includes(me));
   const windowOpen = sub.status === "Challenge" && sub.challenge_ends_at_ms != null && now < sub.challenge_ends_at_ms;
   const windowDone = sub.status === "Challenge" && !windowOpen;
-  // A payout that landed moments ago gets its seal stamped in front of you.
+  // A payout or a decision that landed moments ago gets stamped in front of you.
   const justPaid = sub.status === "Paid" && sub.paid_at_ms != null && now - sub.paid_at_ms < 20_000;
+  const justDecided = sub.decided_at_ms != null && now - sub.decided_at_ms < 20_000;
 
   const actions: React.ReactNode[] = [];
   if (sub.status === "Pending" && isReviewer) {
@@ -149,7 +150,15 @@ export function SubmissionRow({
         )}
       </div>
       <div className="col-start-2 flex flex-wrap items-center gap-2 sm:col-start-auto sm:justify-end">
-        {sub.status === "Paid" ? <Seal route={sub.route} size={52} stamp={justPaid} /> : actions}
+        {sub.status === "Paid" ? (
+          <Seal route={sub.route} size={52} stamp={justPaid} />
+        ) : sub.status === "Vetoed" ? (
+          <Stamp label="Vetoed" tone="veto" stamp={justDecided} />
+        ) : sub.status === "Rejected" ? (
+          <Stamp label="Rejected" tone="ink" stamp={justDecided} />
+        ) : (
+          actions
+        )}
       </div>
 
       <ReasonModal

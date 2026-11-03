@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useState, type ReactNode } from "react";
-import { AccountLink, Avatar, Near, RankBadge, When } from "../components/chain";
+import { useRef, useState, type ReactNode } from "react";
+import { AccountLink, Avatar, Near, RankBadge, Stamp, When } from "../components/chain";
 import { SubmissionRow, type RowContext } from "../components/SubmissionRow";
 import { ActionButton, Button, EmptyState, ExternalLink, Field, Modal, PageHeader, Panel, SectionTitle, inputBase, inputClass } from "../components/ui";
 import { useApp, useChainData, useChainNow } from "../lib/app";
@@ -69,6 +69,8 @@ export function CouncilPage() {
   const daoCtx = useDaoContext();
   const program = useProgram();
   const balance = useChainData(() => dao.balance(), []);
+  // Votes that were open while this page was up; when one is decided, its stamp lands in front of you.
+  const seenOpen = useRef(new Set<number>());
   const d = daoCtx.data;
 
   if (!d) {
@@ -84,6 +86,7 @@ export function CouncilPage() {
     return action ? [{ proposal, action }] : [];
   });
   const open = herald.filter((h) => h.proposal.status === "InProgress");
+  for (const h of open) seenOpen.current.add(h.proposal.id);
   const decided = herald.filter((h) => h.proposal.status !== "InProgress").slice(0, 10);
   const campaigns = program.data?.campaigns ?? [];
   const submissions = program.data?.submissions ?? [];
@@ -195,9 +198,11 @@ export function CouncilPage() {
                 <p className="px-5 py-5 text-sm text-ink-faint">Nothing decided yet.</p>
               ) : (
                 <ul>
-                  {decided.map((h) => (
-                    <DecidedRow key={h.proposal.id} item={h} lookup={lookup} />
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {decided.map((h) => (
+                      <DecidedRow key={h.proposal.id} item={h} lookup={lookup} fresh={seenOpen.current.has(h.proposal.id)} />
+                    ))}
+                  </AnimatePresence>
                 </ul>
               )}
             </div>
@@ -460,13 +465,21 @@ const statusChip: Record<ProposalStatus, string> = {
   InProgress: "bg-accent-wash text-accent-strong",
 };
 
-function DecidedRow({ item, lookup }: { item: HeraldProposal; lookup: Lookup }) {
+/** Outcomes that get a stamp. The rest (expired, removed, moved) keep a plain chip. */
+const decisionStamp: Partial<Record<ProposalStatus, { label: string; tone: "dao" | "ink" | "veto" }>> = {
+  Approved: { label: "Passed", tone: "dao" },
+  Rejected: { label: "Rejected", tone: "ink" },
+  Failed: { label: "Failed", tone: "veto" },
+};
+
+function DecidedRow({ item, lookup, fresh }: { item: HeraldProposal; lookup: Lookup; fresh: boolean }) {
   const { displayName } = useApp();
   const { proposal: p, action } = item;
   const approvals = Object.values(p.votes).filter((v) => v === "Approve").length;
   const rejections = Object.values(p.votes).filter((v) => v === "Reject").length;
+  const stamp = decisionStamp[p.status];
   return (
-    <li className="grid gap-x-4 gap-y-1 border-b border-line px-5 py-3.5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+    <motion.li {...rowMotion} className="grid gap-x-4 gap-y-1 border-b border-line px-5 py-3.5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
       <div className="min-w-0">
         <p className="text-[12.5px] text-ink-faint">
           <span className="font-data">#{p.id}</span> · {actionLabel(action)} · <When ms={proposalTimeMs(p)} />
@@ -477,9 +490,16 @@ function DecidedRow({ item, lookup }: { item: HeraldProposal; lookup: Lookup }) 
         <span className="font-data text-[12.5px] text-ink-faint">
           {approvals} for · {rejections} against
         </span>
-        <span className={`rounded-sm px-2 py-0.5 text-[12.5px] font-medium ${statusChip[p.status]}`}>{p.status === "Approved" ? "Passed" : p.status}</span>
+        {stamp ? (
+          <>
+            <span className="sr-only">{stamp.label}</span>
+            <Stamp label={stamp.label} tone={stamp.tone} stamp={fresh} delayMs={250} />
+          </>
+        ) : (
+          <span className={`rounded-sm px-2 py-0.5 text-[12.5px] font-medium ${statusChip[p.status]}`}>{p.status}</span>
+        )}
       </div>
-    </li>
+    </motion.li>
   );
 }
 

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useApp } from "../lib/app";
 import type { Role } from "../lib/config";
 import { shortAccount } from "../lib/format";
-import { ease, glide } from "../lib/motion";
+import { RollingNumber, ease, glide } from "../lib/motion";
 import { href, type RouteMatch } from "../lib/router";
 import { Avatar } from "./chain";
 import { Button } from "./ui";
@@ -17,7 +17,7 @@ export function Wordmark() {
     <a href={href.home} className="flex items-center gap-2.5" aria-label="Herald home">
       <svg viewBox="0 0 64 64" className="size-8" aria-hidden="true">
         <circle cx="32" cy="32" r="29" fill="var(--tincture-azure)" />
-        <circle cx="32" cy="32" r="22" fill="none" stroke="var(--tincture-or)" strokeWidth="2" strokeDasharray="3 3" />
+        <circle className="wordmark-ring" cx="32" cy="32" r="22" fill="none" stroke="var(--tincture-or)" strokeWidth="2" strokeDasharray="3 3" />
         <path d="M22 20v24M42 20v24M22 32h20" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
       </svg>
       <span className="font-display text-[26px] leading-none tracking-tight text-ink">Herald</span>
@@ -25,15 +25,70 @@ export function Wordmark() {
   );
 }
 
-function LiveDot({ className = "bg-paid" }: { className?: string }) {
+/** A pulsing dot. With `beat`, it pulses once each time the value changes instead of looping. */
+function LiveDot({ className = "bg-paid", beat }: { className?: string; beat?: number }) {
   return (
     <span className="relative flex size-2" aria-hidden="true">
-      <motion.span
-        className={`absolute inset-0 rounded-full ${className}`}
-        animate={{ scale: [1, 2.4], opacity: [0.55, 0] }}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
-      />
+      {beat === undefined ? (
+        <motion.span
+          className={`absolute inset-0 rounded-full ${className}`}
+          animate={{ scale: [1, 2.4], opacity: [0.55, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
+        />
+      ) : (
+        <motion.span
+          key={beat}
+          className={`absolute inset-0 rounded-full ${className}`}
+          initial={{ scale: 1, opacity: 0.6 }}
+          animate={{ scale: 2.6, opacity: 0 }}
+          transition={{ duration: 1.1, ease: "easeOut" }}
+        />
+      )}
       <span className={`relative size-2 rounded-full ${className}`} />
+    </span>
+  );
+}
+
+/** The latest block height, read every two seconds while the tab is visible. */
+function useBlockHeight(): number | null {
+  const { rpc } = useApp();
+  const [height, setHeight] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const read = () => {
+      if (document.visibilityState !== "visible") return;
+      rpc
+        .blockHeight()
+        // Public RPC is load-balanced, so a reply can trail the last one; never step backwards.
+        .then((h) => !cancelled && setHeight((prev) => (prev == null || h > prev ? h : prev)))
+        .catch(() => undefined);
+    };
+    read();
+    const timer = window.setInterval(read, 2000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [rpc]);
+  return height;
+}
+
+/** The network, with the chain's heartbeat: the dot pulses on every new block and the height rolls forward. */
+function ChainBadge() {
+  const { config } = useApp();
+  const height = useBlockHeight();
+  const label = config.network === "local" ? "Local chain" : "NEAR testnet";
+  return (
+    <span className="hidden h-7 items-center gap-2 rounded-full border border-line bg-surface px-2.5 text-[12px] text-ink-soft sm:inline-flex">
+      <LiveDot beat={height ?? 0} />
+      {label}
+      {height != null && (
+        <span className="hidden items-center border-l border-line pl-2 font-data text-ink xl:inline-flex" title="Latest block">
+          <span aria-hidden="true" className="text-ink-faint before:content-['#']" />
+          <RollingNumber value={height} />
+          <span className="sr-only">Latest block {height}</span>
+        </span>
+      )}
     </span>
   );
 }
@@ -223,10 +278,7 @@ export function Shell({ route, children }: { route: RouteMatch; children: ReactN
             <NavLinks items={nav} pillId="nav-pill" />
           </nav>
           <div className="ml-auto flex items-center gap-3">
-            <span className="hidden items-center gap-2 rounded-full border border-line bg-surface px-2.5 py-1 text-[12px] text-ink-soft sm:inline-flex">
-              <LiveDot />
-              {config.network === "local" ? "Local chain" : "NEAR testnet"}
-            </span>
+            <ChainBadge />
             <ActorMenu />
           </div>
         </div>

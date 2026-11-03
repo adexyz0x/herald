@@ -36,6 +36,12 @@ export class Rpc {
     return BigInt(result.amount);
   }
 
+  /** The latest block's height. */
+  async blockHeight(): Promise<number> {
+    const block = await this.request<{ header: { height: number } }>("block", { finality: "optimistic" });
+    return block.header.height;
+  }
+
   /** The chain's current time in milliseconds. */
   async chainTimeMs(): Promise<number> {
     const block = await this.request<{ header: { timestamp_nanosec: string } }>("block", {

@@ -1,4 +1,5 @@
-import { motion, type Transition, type Variants } from "motion/react";
+import { animate, motion, useMotionValue, useReducedMotion, useTransform, type Transition, type Variants } from "motion/react";
+import { useEffect } from "react";
 
 /**
  * Herald's motion rules. UI responses run 150 to 250ms; the one choreographed moment (the home
@@ -62,6 +63,56 @@ export function Figure({
     >
       {text}
     </motion.span>
+  );
+}
+
+const ROW_EM = 1.25;
+
+/**
+ * A number whose digits roll forward like an odometer when it changes, for the live block
+ * height. At rest it always reads the real value. It is hidden from screen readers and its glyphs
+ * are drawn by CSS (`.digit-strip`, `.glyph`), so put the number in text nearby.
+ */
+export function RollingNumber({ value, className = "" }: { value: number; className?: string }) {
+  const chars = value.toLocaleString("en-US").split("");
+  return (
+    <span className={`inline-flex h-[1.25em] leading-[1.25em] ${className}`} aria-hidden="true">
+      {chars.map((ch, i) => {
+        // Keyed from the right, so each column keeps its place as the number grows.
+        const key = chars.length - i;
+        return /\d/.test(ch) ? <Digit key={key} digit={Number(ch)} /> : <span key={key} className="glyph" data-glyph={ch} />;
+      })}
+    </span>
+  );
+}
+
+function Digit({ digit }: { digit: number }) {
+  const reduce = useReducedMotion();
+  const row = useMotionValue(digit);
+  const y = useTransform(row, (r) => `${-r * ROW_EM}em`);
+
+  useEffect(() => {
+    let from = row.get();
+    // Rows repeat every ten, so stepping back a full turn looks the same and keeps room to roll.
+    if (from >= 10) {
+      from -= 10;
+      row.set(from);
+    }
+    const target = digit < from - 0.001 ? digit + 10 : digit;
+    if (Math.abs(target - from) < 0.001) return;
+    if (reduce) {
+      row.set(digit);
+      return;
+    }
+    const controls = animate(row, target, { duration: 0.6, ease, onComplete: () => row.set(digit) });
+    return () => controls.stop();
+  }, [digit, reduce, row]);
+
+  return (
+    <span className="relative inline-block h-[1.25em] overflow-hidden">
+      <span className="invisible">0</span>
+      <motion.span className="digit-strip absolute inset-x-0 top-0" style={{ y }} />
+    </span>
   );
 }
 
