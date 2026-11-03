@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="What to post for the Herald launch week pilot on NEAR testnet, what each post pays, and how to get paid." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Herald launch week brief</title>
+    <style>
+      :root {
+        --page: #f4f6fa;
+        --surface: #ffffff;
+        --ink: #12141b;
+        --ink-soft: #464c5c;
+        --ink-faint: #626a7e;
+        --line: #dfe3eb;
+        --azure: #2747c9;
+        --azure-wash: #e8ecfc;
+        --or: #d99a16;
+        --or-ink: #7a5306;
+        --or-wash: #fcf2dc;
+        --vert-ink: #145a3c;
+        --gules-ink: #962620;
+        --on-azure: #ffffff;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --page: #0b0e17;
+          --surface: #121726;
+          --ink: #eef1f8;
+          --ink-soft: #b3bacb;
+          --ink-faint: #8790a6;
+          --line: #232a40;
+          --azure: #8197ff;
+          --azure-wash: #1b2552;
+          --or: #ebb443;
+          --or-ink: #f5d27f;
+          --or-wash: #382a0c;
+          --vert-ink: #93e3bf;
+          --gules-ink: #f7afa9;
+          --on-azure: #0b0e17;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --page: #0b0e17;
+        --surface: #121726;
+        --ink: #eef1f8;
+        --ink-soft: #b3bacb;
+        --ink-faint: #8790a6;
+        --line: #232a40;
+        --azure: #8197ff;
+        --azure-wash: #1b2552;
+        --or: #ebb443;
+        --or-ink: #f5d27f;
+        --or-wash: #382a0c;
+        --vert-ink: #93e3bf;
+        --gules-ink: #f7afa9;
+        --on-azure: #0b0e17;
+        color-scheme: dark;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--ink);
+        font: 16px/1.65 "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .band { height: 3px; background: linear-gradient(90deg, #2747c9 0 34%, #d99a16 34% 56%, #6b3fb8 56% 74%, #1e7f55 74% 90%, #c2362f 90% 100%); }
+      main { max-width: 720px; margin: 0 auto; padding: 40px 16px 64px; }
+      .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font: 26px/1 Georgia, "Times New Roman", serif; }
+      h1 { font: 400 clamp(34px, 6vw, 48px)/1.08 Georgia, "Times New Roman", serif; margin: 28px 0 8px; letter-spacing: -0.005em; }
+      h2 { font-size: 18px; margin: 36px 0 10px; }
+      p, li { color: var(--ink-soft); }
+      .lede { font-size: 17px; max-width: 58ch; }
+      .note { margin: 20px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--or-wash); color: var(--or-ink); font-size: 14.5px; }
+      table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 15px; }
+      th, td { text-align: left; padding: 11px 14px; border-top: 1px solid var(--line); }
+      th { border-top: 0; color: var(--ink-faint); font-weight: 500; font-size: 13px; }
+      td:last-child, th:last-child { text-align: right; white-space: nowrap; }
+      td { color: var(--ink); }
+      ol, ul { padding-left: 22px; }
+      li { margin: 6px 0; }
+      strong { color: var(--ink); font-weight: 600; }
+      a { color: var(--azure); }
+      .cta { display: inline-block; margin-top: 8px; padding: 11px 18px; border-radius: 8px; background: var(--azure); color: var(--on-azure); text-decoration: none; font-weight: 600; }
+      .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+      .card strong { display: block; margin-bottom: 4px; }
+      .card p { margin: 0; font-size: 14.5px; }
+      .yes { color: var(--vert-ink); }
+      .no { color: var(--gules-ink); }
+      footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 13.5px; }
+    </style>
+  </head>
+  <body>
+    <div class="band" aria-hidden="true"></div>
+    <main>
+      <a class="brand" href="/">
+        <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true">
+          <circle cx="32" cy="32" r="29" fill="#2747c9" />
+          <circle cx="32" cy="32" r="22" fill="none" stroke="#d99a16" stroke-width="2" stroke-dasharray="3 3" />
+          <path d="M22 20v24M42 20v24M22 32h20" stroke="#fff" stroke-width="5" stroke-linecap="round" />
+        </svg>
+        Herald
+      </a>
+
+      <h1>Herald launch week</h1>
+      <p class="lede">
+        Help people understand Herald, a way for DAOs to pay their ambassadors and creators fairly. Post about it, submit the link, and get paid from the
+        DAO's treasury, automatically once you've earned it.
+      </p>
+      <p class="note">
+        This is a pilot on NEAR testnet. Payouts are in test NEAR, which has no money value. Your posts and feedback are real, and they help shape the
+        product.
+      </p>
+
+      <h2>What pays</h2>
+      <table>
+        <thead>
+          <tr><th>Deliverable</th><th>Pays</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>X thread: what Herald does, in your own words</td><td>0.5 NEAR</td></tr>
+          <tr><td>Short video (under 90 seconds) showing the app</td><td>1.5 NEAR</td></tr>
+          <tr><td>Co-hosting or speaking in an X Space about Herald</td><td>1 NEAR</td></tr>
+        </tbody>
+      </table>
+
+      <h2>How you get paid</h2>
+      <div class="grid">
+        <div class="card">
+          <strong>Your first two posts</strong>
+          <p>A reviewer checks the link and approves it. You're paid the moment they do.</p>
+        </div>
+        <div class="card">
+          <strong>After two paid posts</strong>
+          <p>You're Trusted. Rate-card posts pay automatically after a 3-minute public window.</p>
+        </div>
+        <div class="card">
+          <strong>Anything unusual</strong>
+          <p>Pick "Something else" with your own amount. A reviewer decides, or the DAO votes on big asks.</p>
+        </div>
+      </div>
+
+      <h2>Get started in five minutes</h2>
+      <ol>
+        <li>Open <a href="https://wallet.meteorwallet.app" rel="noopener">Meteor Wallet</a>, click <strong>MAIN</strong> at the top right and switch to <strong>Testnet</strong>, then create a wallet. Keep your recovery phrase to yourself. Nobody from Herald will ever ask for it.</li>
+        <li>Your new wallet starts empty. Get free test NEAR at <a href="https://near-faucet.io" rel="noopener">near-faucet.io</a>: paste your wallet address and ask for 1 NEAR. Each submission holds about 0.05 NEAR for storage, and whatever isn't used comes back.</li>
+        <li>Post your thread, video or Space, and copy its public link.</li>
+        <li>Open Herald, click <strong>Connect wallet</strong>, choose Meteor, then open <strong>Herald launch week</strong> and submit the link.</li>
+        <li>Watch it on your <strong>My record</strong> page: every payout and point is public.</li>
+      </ol>
+      <a class="cta" href="/">Open Herald</a>
+
+      <h2>House rules</h2>
+      <ul>
+        <li class="yes">Do write in your own voice, tag @NEARProtocol and use #NEARHackathon.</li>
+        <li class="yes">Do keep your post up for the whole pilot.</li>
+        <li class="no">Don't buy likes or views, copy someone else's post, or delete a post after it's paid. Any of these gets a public veto, and fraud gets a ban.</li>
+        <li class="no">Don't submit the same post twice.</li>
+      </ul>
+
+      <h2>Dates</h2>
+      <p>The pilot runs from 8 to 11 November 2026. Submissions after that may not be reviewed.</p>
+
+      <footer>Herald launch week is run by the Herald Pilot DAO on NEAR testnet. Its council is Ade, who leads the project, plus two operator accounts the Herald team runs for the pilot (oliver-herald and amelia-herald). Every payout, veto and vote is public on chain.</footer>
+    </main>
+  </body>
+</html>

@@ -55,7 +55,7 @@ balance() {
 
 case "${1:-}" in
   status)
-    for account in "$HERALD" "$DAO" herald-council-1.testnet herald-council-2.testnet; do
+    for account in "$HERALD" "$DAO" oliver-herald.testnet amelia-herald.testnet; do
       echo "$account: $(balance "$account")"
     done
     ;;
