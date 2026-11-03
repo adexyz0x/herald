@@ -190,13 +190,13 @@ async fn main() -> anyhow::Result<()> {
     let herald = make("herald", 40).await?.deploy(&wasm).await?.into_result()?;
     herald.call("new").transact().await?.into_result()?;
 
-    let ada = make("ada", 50).await?;
+    let ade = make("ade", 50).await?;
     let bayo = make("bayo", 50).await?;
     let dao = make("beacon", 600).await?.deploy(SPUTNIK).await?.into_result()?;
     dao.call("new")
         .args_json(json!({
             "config": { "name": "beacon", "purpose": "Beacon Collective ambassador treasury", "metadata": "" },
-            "policy": [ada.id(), bayo.id()],
+            "policy": [ade.id(), bayo.id()],
         }))
         .max_gas()
         .transact()
@@ -211,7 +211,7 @@ async fn main() -> anyhow::Result<()> {
     let lina = make("lina", 20).await?;
     let sol = make("sol", 20).await?;
 
-    let d = Demo { worker, herald, dao, council: vec![ada.clone(), bayo.clone()] };
+    let d = Demo { worker, herald, dao, council: vec![ade.clone(), bayo.clone()] };
 
     println!("Launching campaigns through DAO votes...");
     d.launch(
@@ -308,14 +308,14 @@ async fn main() -> anyhow::Result<()> {
         .submit(&sol, 0, None, Some(25.0), "https://example.org/sol/beacon-hausa-guide", "Full Hausa translation of the docs")
         .await?;
     let proposal: Value = d.herald.view("get_dao_proposal").args_json(json!({ "submission_id": large })).await?.json()?;
-    let pid = d.propose(&ada, proposal["description"].as_str().unwrap(), &proposal["kind"]).await?;
-    d.vote(&ada, pid, &proposal["kind"]).await?;
+    let pid = d.propose(&ade, proposal["description"].as_str().unwrap(), &proposal["kind"]).await?;
+    d.vote(&ade, pid, &proposal["kind"]).await?;
     // Live challenge windows: automatic payouts that can still be vetoed.
     d.submit(&cleo, 0, Some(0), None, &format!("{x}/cleo_onchain/status/14"), "Thread on Beacon's Q4 roadmap").await?;
     d.submit(&femi, 0, Some(2), None, "https://x.com/i/spaces/beacon-q4", "Co-hosted the Q4 community Space").await?;
 
     let personas = vec![
-        Persona { account: ada, name: "Ada", role: "council" },
+        Persona { account: ade, name: "Ade", role: "council" },
         Persona { account: bayo, name: "Bayo", role: "council" },
         Persona { account: kemi, name: "Kemi", role: "reviewer" },
         Persona { account: marco, name: "Marco", role: "reviewer" },

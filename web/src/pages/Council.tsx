@@ -78,6 +78,7 @@ export function CouncilPage() {
 
   const me = actor.accountId;
   const isCouncil = Boolean(me && d.council.includes(me));
+  const councilNames = config.personas.filter((p) => d.council.includes(p.accountId)).map((p) => p.name);
   const herald: HeraldProposal[] = d.proposals.flatMap((proposal) => {
     const action = heraldAction(proposal, config.herald);
     return action ? [{ proposal, action }] : [];
@@ -132,7 +133,11 @@ export function CouncilPage() {
 
       {!isCouncil && (
         <p className="rounded-md bg-sunk px-4 py-3 text-sm text-ink-soft">
-          {actor.kind === "guest" ? "Choose Ada or Bayo in the switcher at the top to vote as a council member." : `You're viewing as ${actor.name}. Only council members vote and file proposals here, but every vote is public.`}
+          {actor.kind === "guest"
+            ? councilNames.length > 0
+              ? `Choose ${councilNames.join(" or ")} in the switcher at the top to vote as a council member.`
+              : "Connect a council member's wallet to vote."
+            : `You're viewing as ${actor.name}. Only council members vote and file proposals here, but every vote is public.`}
         </p>
       )}
 
