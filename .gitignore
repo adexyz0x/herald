@@ -8,6 +8,8 @@ web/.vite/
 .env
 .env.*
 !.env.example
+# Public testnet settings, no secrets
+!web/.env.testnet
 *.pem
 neardev/
 # OS

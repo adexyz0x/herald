@@ -7,7 +7,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
+    "dev:testnet": "vite --mode testnet",
     "build": "vite build",
+    "build:testnet": "vite build --mode testnet",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
@@ -15,16 +17,18 @@
     "@fontsource/gloock": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/public-sans": "^5.3.0",
+    "@near-js/transactions": "2.5.1",
     "@near-wallet-selector/core": "^10.1.4",
-    "@near-wallet-selector/here-wallet": "^10.1.4",
     "@near-wallet-selector/intear-wallet": "^10.1.4",
     "@near-wallet-selector/meteor-wallet": "^10.1.4",
     "@near-wallet-selector/modal-ui": "^10.1.4",
     "@near-wallet-selector/my-near-wallet": "^10.1.4",
+    "buffer": "6.0.3",
     "motion": "14.4.0",
     "near-api-js": "^7.4.0",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "util": "0.12.5"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

@@ -152,7 +152,11 @@ export function CampaignPage({ id }: { id: number }) {
         <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
           {actor.kind === "guest" ? (
             <Panel title="Join this campaign" tone="accent">
-              <p className="text-sm text-ink-soft">Choose who you are with the switcher at the top: a creator to submit work, a reviewer to approve it, or a council member to run the DAO side.</p>
+              <p className="text-sm text-ink-soft">
+                {config.network === "local"
+                  ? "Choose who you are with the switcher at the top: a creator to submit work, a reviewer to approve it, or a council member to run the DAO side."
+                  : "Connect a NEAR wallet at the top to submit work. Reviewers and council members connect the same way."}
+              </p>
             </Panel>
           ) : isReviewer ? (
             <Panel title="You review this campaign" tone="accent">

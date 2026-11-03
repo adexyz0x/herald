@@ -2,9 +2,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useApp } from "../lib/app";
 import type { Role } from "../lib/config";
+import { shortAccount } from "../lib/format";
 import { ease, glide } from "../lib/motion";
 import { href, type RouteMatch } from "../lib/router";
 import { Avatar } from "./chain";
+import { Button } from "./ui";
 
 const roleLabel: Record<Role, string> = { council: "Council", reviewer: "Reviewer", creator: "Creator" };
 /** Roles wear the tincture of what they do: the council votes (purpure), reviewers review (azure), creators get paid (vert). */
@@ -54,13 +56,7 @@ function ActorMenu() {
     };
   }, [open]);
 
-  if (config.network !== "local") {
-    return (
-      <span className="text-[13px] text-ink-faint" title="Wallet connection ships with the testnet build">
-        Wallet coming with testnet
-      </span>
-    );
-  }
+  if (config.network !== "local") return <WalletControl />;
 
   const groups: Role[] = ["council", "reviewer", "creator"];
   const current = actor.kind === "persona" ? actor.persona : null;
@@ -143,6 +139,32 @@ function ActorMenu() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+/** Public networks: one button to connect a NEAR wallet, then the account and a way out. */
+function WalletControl() {
+  const { actor, wallet } = useApp();
+  if (!wallet) return null;
+  if (actor.kind !== "wallet") {
+    return (
+      <Button variant="primary" size="sm" onClick={wallet.signIn} disabled={!wallet.ready} busy={!wallet.ready}>
+        Connect wallet
+      </Button>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="flex h-10 items-center gap-2 rounded-md border border-line-strong bg-surface pr-3 pl-1.5 shadow-card">
+        <Avatar accountId={actor.accountId} size={28} />
+        <span className="max-w-[150px] truncate text-[13px] font-semibold text-ink" title={actor.accountId}>
+          {shortAccount(actor.accountId)}
+        </span>
+      </span>
+      <Button size="sm" variant="ghost" onClick={() => void wallet.signOut()}>
+        Sign out
+      </Button>
     </div>
   );
 }

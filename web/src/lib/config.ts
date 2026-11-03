@@ -27,7 +27,7 @@ export async function loadConfig(): Promise<AppConfig> {
   if (env.VITE_NETWORK === "testnet") {
     return {
       network: "testnet",
-      rpcUrl: env.VITE_RPC_URL ?? "https://rpc.testnet.near.org",
+      rpcUrl: env.VITE_RPC_URL ?? "https://test.rpc.fastnear.com",
       herald: env.VITE_HERALD_CONTRACT,
       dao: env.VITE_DAO_ACCOUNT,
       daoName: env.VITE_DAO_NAME ?? env.VITE_DAO_ACCOUNT,

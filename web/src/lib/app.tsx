@@ -5,6 +5,7 @@ import { HeraldClient, type Call } from "./herald";
 import { Rpc } from "./rpc";
 import type { Actor } from "./signer";
 import { SputnikClient } from "./sputnik";
+import type { WalletKit } from "./wallet";
 
 export interface Toast {
   id: number;
@@ -33,6 +34,8 @@ interface AppState {
   displayName: (accountId: string) => string;
   toasts: Toast[];
   dismissToast: (id: number) => void;
+  /** Public networks only: open the wallet picker, or sign out of the connected wallet. */
+  wallet: { ready: boolean; signIn: () => void; signOut: () => Promise<void> } | null;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -70,6 +73,8 @@ export function AppProvider({ config, children }: { config: AppConfig; children:
   const [clockReady, setClockReady] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastId = useRef(0);
+  const [walletKit, setWalletKit] = useState<WalletKit | null>(null);
+  const usesWallet = config.network !== "local";
 
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
 
@@ -94,17 +99,22 @@ export function AppProvider({ config, children }: { config: AppConfig; children:
   const execute = useCallback(
     async (call: Call, messages: { success: string | (() => Promise<string>) }) => {
       if (actor.kind === "guest") {
-        pushToast("error", "Choose who you're acting as first, using the switcher at the top.");
-        return undefined;
-      }
-      if (actor.kind === "wallet") {
-        pushToast("error", "Wallet signing arrives with the testnet build.");
+        pushToast("error", usesWallet ? "Connect your wallet first, at the top of the page." : "Choose who you're acting as first, using the switcher at the top.");
         return undefined;
       }
       try {
-        // The signer pulls in near-api-js, so it loads on first use instead of with the page.
-        const { personaExecutor } = await import("./signer");
-        const result = await personaExecutor(config.rpcUrl, actor.persona)(call);
+        let result: unknown;
+        if (actor.kind === "wallet") {
+          if (!walletKit) throw new Error("The wallet is still loading. Try again in a moment.");
+          const { walletExecutor } = await import("./wallet");
+          result = await walletExecutor(walletKit.selector)(call);
+          // Browser wallets leave the page to sign; the result is read when the person comes back.
+          if (result === undefined) return undefined;
+        } else {
+          // The signer pulls in near-api-js, so it loads on first use instead of with the page.
+          const { personaExecutor } = await import("./signer");
+          result = await personaExecutor(config.rpcUrl, actor.persona)(call);
+        }
         pushToast("success", typeof messages.success === "string" ? messages.success : await messages.success());
         refresh();
         return result;
@@ -114,16 +124,66 @@ export function AppProvider({ config, children }: { config: AppConfig; children:
         return undefined;
       }
     },
-    [actor, config.rpcUrl, pushToast, refresh],
+    [actor, config.rpcUrl, pushToast, refresh, walletKit, usesWallet],
   );
 
-  // Live data: refresh every 5 seconds while the tab is visible.
+  // Public networks: connect wallets, follow sign-ins and sign-outs, and report what a wallet
+  // redirect brought back.
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") refresh();
-    }, 5000);
+    if (!usesWallet) return;
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+    import("./wallet")
+      .then(async ({ setupWallets, activeAccount, takeWalletReturn }) => {
+        const kit = await setupWallets(config.rpcUrl, config.herald);
+        if (cancelled) return;
+        const follow = () => {
+          const accountId = activeAccount(kit.selector);
+          setActorState(accountId ? { kind: "wallet", accountId, name: accountId } : GUEST);
+        };
+        follow();
+        const subscription = kit.selector.store.observable.subscribe(follow);
+        unsubscribe = () => subscription.unsubscribe();
+        setWalletKit(kit);
+        const returned = takeWalletReturn();
+        if (returned) {
+          pushToast(returned.ok ? "success" : "error", returned.message);
+          refresh();
+        }
+      })
+      .catch((error) => !cancelled && pushToast("error", `Couldn't load wallets: ${errorMessage(error)}`));
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, [usesWallet, config.rpcUrl, config.herald, pushToast, refresh]);
+
+  const wallet = useMemo(
+    () =>
+      usesWallet
+        ? {
+            ready: walletKit != null,
+            signIn: () => walletKit?.modal.show(),
+            signOut: async () => {
+              if (!walletKit) return;
+              const w = await walletKit.selector.wallet();
+              await w.signOut();
+            },
+          }
+        : null,
+    [usesWallet, walletKit],
+  );
+
+  // Live data: refresh while the tab is visible. Public RPC endpoints get a gentler pace.
+  useEffect(() => {
+    const timer = window.setInterval(
+      () => {
+        if (document.visibilityState === "visible") refresh();
+      },
+      usesWallet ? 10_000 : 5000,
+    );
     return () => window.clearInterval(timer);
-  }, [refresh]);
+  }, [refresh, usesWallet]);
 
   // Sync with the chain's clock; the local sandbox can run ahead of real time.
   useEffect(() => {
@@ -169,6 +229,7 @@ export function AppProvider({ config, children }: { config: AppConfig; children:
     displayName,
     toasts,
     dismissToast,
+    wallet,
   };
   return <AppContext.Provider value={value}>{clockReady ? children : null}</AppContext.Provider>;
 }

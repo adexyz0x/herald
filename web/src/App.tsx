@@ -90,15 +90,30 @@ function Routes() {
   );
 }
 
-/** Says so plainly when the chain stops answering, instead of leaving screens empty. */
+/** Says so plainly when the chain stops answering or Herald isn't there, instead of leaving screens empty. */
 function ChainCheck() {
-  const { rpc, config } = useApp();
+  const { rpc, herald, config } = useApp();
   const head = useChainData(() => rpc.chainTimeMs(), []);
-  if (!head.error) return null;
+  const contract = useChainData(() => herald.stats(), []);
+  const local = config.network === "local";
+  let problem: ReactNode = null;
+  if (head.error) {
+    problem = (
+      <>
+        Can't reach the chain at <span className="font-data">{config.rpcUrl}</span>. {local ? "Start it again with cargo run --example demo, then reload this page." : "Check your connection and reload."}
+      </>
+    );
+  } else if (contract.error && !contract.data) {
+    problem = (
+      <>
+        Herald isn't running at <span className="font-data">{config.herald}</span> on this network yet. {local ? "Restart the demo with cargo run --example demo." : "It goes live once the contract is deployed."}
+      </>
+    );
+  }
+  if (!problem) return null;
   return (
     <div role="alert" className="mb-8 rounded-md border border-veto/40 bg-veto-wash px-4 py-3 text-sm text-veto-ink">
-      Can't reach the chain at <span className="font-data">{config.rpcUrl}</span>.{" "}
-      {config.network === "local" ? "Start it again with cargo run --example demo, then reload this page." : "Check your connection and reload."}
+      {problem}
     </div>
   );
 }
