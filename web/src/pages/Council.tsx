@@ -7,7 +7,7 @@ import { useApp, useChainData, useChainNow } from "../lib/app";
 import { formatNear, parseNear, toNear } from "../lib/format";
 import { ruleLines, type Campaign, type Deliverable, type HeraldClient, type Rules, type Submission } from "../lib/herald";
 import { useDaoContext, useProgram, type DaoContext } from "../lib/hooks";
-import { CountUp, ease, formatNearNumber, nearNumber, rowMotion } from "../lib/motion";
+import { Figure, ease, formatNearNumber, nearNumber, rowMotion } from "../lib/motion";
 import { href } from "../lib/router";
 import {
   actionLabel,
@@ -103,7 +103,7 @@ export function CouncilPage() {
         <Fact label="Treasury" dot="bg-gold">
           {balance.data != null ? (
             <span className="font-data text-[20px] leading-tight text-ink sm:text-[24px]">
-              <CountUp value={nearNumber(balance.data)} format={formatNearNumber} /> <span className="text-ink-faint">NEAR</span>
+              <Figure value={nearNumber(balance.data)} format={formatNearNumber} /> <span className="text-ink-faint">NEAR</span>
             </span>
           ) : (
             "…"

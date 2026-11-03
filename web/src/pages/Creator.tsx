@@ -5,7 +5,7 @@ import { SubmissionRow, type RowContext } from "../components/SubmissionRow";
 import { EmptyState, LinkButton, Panel, SectionTitle } from "../components/ui";
 import { useApp, useChainData } from "../lib/app";
 import { formatNear } from "../lib/format";
-import { CountUp, formatNearNumber, nearNumber } from "../lib/motion";
+import { Figure, formatNearNumber, nearNumber } from "../lib/motion";
 import { OPEN_STATUSES, autoLimit, tierFor, type Campaign, type Reputation, type Submission } from "../lib/herald";
 import { useDaoContext, useProgram } from "../lib/hooks";
 import { href } from "../lib/router";
@@ -109,8 +109,8 @@ export function CreatorPage({ accountId }: { accountId: string }) {
           {mine.length > 0 && (
             <section aria-label="Totals" className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line shadow-card sm:grid-cols-4">
               {[
-                { label: "Earned", dot: "bg-paid", value: <CountUp value={nearNumber(earned)} format={(n) => `${formatNearNumber(n)} NEAR`} /> },
-                { label: "Paid deliverables", dot: "bg-gold", value: <CountUp value={paid.length} /> },
+                { label: "Earned", dot: "bg-paid", value: <Figure value={nearNumber(earned)} format={(n) => `${formatNearNumber(n)} NEAR`} /> },
+                { label: "Paid deliverables", dot: "bg-gold", value: <Figure value={paid.length} /> },
                 { label: "Open now", dot: "bg-accent", value: open.length },
                 { label: "Vetoed", dot: "bg-veto", value: vetoed },
               ].map((stat) => (
@@ -197,7 +197,7 @@ function RecordCard({ dao, record, campaigns }: { dao: string; record?: Reputati
           <div className="flex items-end justify-between">
             <span className="flex items-baseline gap-1.5">
               <span className="font-data text-[34px] leading-none text-ink">
-                <CountUp value={record.points} />
+                <Figure value={record.points} />
               </span>
               <span className="text-sm text-ink-soft">points</span>
             </span>

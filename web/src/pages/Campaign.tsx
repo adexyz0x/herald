@@ -7,7 +7,7 @@ import { useApp, useChainData } from "../lib/app";
 import { formatDuration, formatNear, parseNear } from "../lib/format";
 import { useDaoContext } from "../lib/hooks";
 import { OPEN_STATUSES, previewRoute, ruleLines, type Campaign, type Route, type TierView } from "../lib/herald";
-import { CountUp, formatNearNumber, nearNumber } from "../lib/motion";
+import { Figure, formatNearNumber, nearNumber } from "../lib/motion";
 import { href } from "../lib/router";
 
 type Filter = "All" | "Open" | "Paid" | "Declined";
@@ -89,7 +89,7 @@ export function CampaignPage({ id }: { id: number }) {
           <Panel title="Budget" tone="gold">
             <p className="mb-4 flex flex-wrap items-baseline gap-x-2">
               <span className="font-data text-[34px] leading-none text-ink">
-                <CountUp value={nearNumber(c.available)} format={formatNearNumber} />
+                <Figure value={nearNumber(c.available)} format={formatNearNumber} />
               </span>
               <span className="text-sm text-ink-soft">NEAR available to pay out</span>
             </p>

@@ -8,7 +8,7 @@ import { useApp, useChainData } from "../lib/app";
 import { plural } from "../lib/format";
 import type { Submission } from "../lib/herald";
 import { useProgram } from "../lib/hooks";
-import { CountUp, ease, formatNearNumber, nearNumber, rise, stagger } from "../lib/motion";
+import { Figure, ease, formatNearNumber, nearNumber, rise, stagger } from "../lib/motion";
 import { href } from "../lib/router";
 
 /** The headline, line by line, so each line can rise out of its own mask. */
@@ -81,16 +81,16 @@ export function Home() {
 
       <section aria-label="Program totals" className="-mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line shadow-card sm:-mt-8 sm:grid-cols-4">
         <Stat label="Paid to creators" dot="bg-paid">
-          {stats.data ? <CountUp value={nearNumber(stats.data.total_paid)} format={(n) => `${formatNearNumber(n)} NEAR`} /> : "…"}
+          {stats.data ? <Figure value={nearNumber(stats.data.total_paid)} format={(n) => `${formatNearNumber(n)} NEAR`} /> : "…"}
         </Stat>
         <Stat label="Payouts" dot="bg-gold">
-          {stats.data ? <CountUp value={stats.data.payouts} /> : "…"}
+          {stats.data ? <Figure value={stats.data.payouts} /> : "…"}
         </Stat>
         <Stat label="Creators" dot="bg-accent">
-          {stats.data ? <CountUp value={stats.data.creators} /> : "…"}
+          {stats.data ? <Figure value={stats.data.creators} /> : "…"}
         </Stat>
         <Stat label="Campaigns" dot="bg-dao">
-          {stats.data ? <CountUp value={stats.data.campaigns} /> : "…"}
+          {stats.data ? <Figure value={stats.data.campaigns} /> : "…"}
         </Stat>
       </section>
 

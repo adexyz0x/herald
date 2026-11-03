@@ -1,5 +1,4 @@
-import { animate, useReducedMotion, type Transition, type Variants } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { motion, type Transition, type Variants } from "motion/react";
 
 /**
  * Herald's motion rules. UI responses run 150 to 250ms; the one choreographed moment (the home
@@ -39,45 +38,34 @@ export const rowMotion = {
 };
 
 /**
- * A number that counts to its value when it first renders and glides when the value changes,
- * so a payout landing visibly moves the totals.
+ * A figure that settles into place when it appears and whenever it changes. It always shows the
+ * real value, never an in-between count, so a screenshot or a screen reader can't catch a wrong
+ * number on a payments screen.
  */
-export function CountUp({
+export function Figure({
   value,
   format = (n) => Math.round(n).toLocaleString("en-US"),
-  className,
+  className = "",
 }: {
   value: number;
   format?: (n: number) => string;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
-  const [shown, setShown] = useState(reduce ? value : 0);
-  const current = useRef(reduce ? value : 0);
-
-  useEffect(() => {
-    if (reduce) {
-      current.current = value;
-      setShown(value);
-      return;
-    }
-    const first = current.current === 0;
-    const controls = animate(current.current, value, {
-      duration: first ? 1.1 : 0.6,
-      ease,
-      onUpdate: (v) => {
-        current.current = v;
-        setShown(v);
-      },
-    });
-    return () => controls.stop();
-  }, [value, reduce]);
-
-  // The count finishes in about a second, before anyone could read a value mid-way.
-  return <span className={className}>{format(shown)}</span>;
+  const text = format(value);
+  return (
+    <motion.span
+      key={text}
+      className={`inline-block ${className}`}
+      initial={{ opacity: 0.25, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease }}
+    >
+      {text}
+    </motion.span>
+  );
 }
 
-/** NEAR amount in yoctoNEAR as a plain number of NEAR, for counting animations. */
+/** NEAR amount in yoctoNEAR as a plain number of NEAR, for figures. */
 export function nearNumber(yocto: string | bigint): number {
   return Number(BigInt(yocto) / 10n ** 20n) / 10_000;
 }
