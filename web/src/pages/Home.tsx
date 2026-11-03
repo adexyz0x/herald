@@ -153,7 +153,7 @@ export function Home() {
           },
           {
             title: "No admin key",
-            body: "Nobody can change a campaign except the DAO, through its own votes. Not even the people who built Herald.",
+            body: "The contract has no admin methods. Only a campaign's DAO can change it, through its own votes.",
             tone: "bg-accent-wash text-accent-strong",
             icon: (
               <>
