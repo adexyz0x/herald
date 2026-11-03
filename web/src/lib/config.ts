@@ -8,6 +8,13 @@ export interface Persona {
   secretKey: string;
 }
 
+/** A public name for a real account on a public network, from public/profiles.json. */
+export interface Profile {
+  name: string;
+  /** Who they are, said honestly: shown next to their name where roles matter. */
+  note?: string;
+}
+
 export interface AppConfig {
   network: "local" | "testnet";
   rpcUrl: string;
@@ -15,7 +22,18 @@ export interface AppConfig {
   dao: string;
   daoName: string;
   personas: Persona[];
+  profiles: Record<string, Profile>;
   explorerUrl?: string;
+}
+
+/** Display names for real accounts. Optional: without the file, account IDs are shown. */
+async function loadProfiles(): Promise<Record<string, Profile>> {
+  try {
+    const res = await fetch("/profiles.json", { cache: "no-store" });
+    return res.ok ? ((await res.json()) as Record<string, Profile>) : {};
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -32,10 +50,11 @@ export async function loadConfig(): Promise<AppConfig> {
       dao: env.VITE_DAO_ACCOUNT,
       daoName: env.VITE_DAO_NAME ?? env.VITE_DAO_ACCOUNT,
       personas: [],
+      profiles: await loadProfiles(),
       explorerUrl: "https://testnet.nearblocks.io",
     };
   }
   const res = await fetch("/local-demo.json", { cache: "no-store" });
   if (!res.ok) throw new Error("local-demo-missing");
-  return (await res.json()) as AppConfig;
+  return { profiles: {}, ...((await res.json()) as Omit<AppConfig, "profiles">) };
 }

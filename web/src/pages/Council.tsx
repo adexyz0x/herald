@@ -65,7 +65,7 @@ interface HeraldProposal {
 }
 
 export function CouncilPage() {
-  const { config, dao, actor } = useApp();
+  const { config, dao, actor, displayName } = useApp();
   const daoCtx = useDaoContext();
   const program = useProgram();
   const balance = useChainData(() => dao.balance(), []);
@@ -97,6 +97,18 @@ export function CouncilPage() {
         <p className="mt-2 max-w-[68ch] text-[15px] text-ink-soft">
           {config.daoName} is a Sputnik DAO at <span className="font-data text-[13.5px] text-ink">{config.dao}</span>. Herald only ever holds the budgets the DAO votes in, and only the DAO's own proposals can launch, top up or close a campaign.
         </p>
+        {d.council.some((m) => config.profiles[m]?.note) && (
+          <p className="mt-2 max-w-[68ch] text-[13.5px] text-ink-faint">
+            On the council:{" "}
+            {d.council.map((m, i) => (
+              <span key={m}>
+                {i > 0 && " · "}
+                <span className="font-medium text-ink-soft">{displayName(m)}</span>
+                {config.profiles[m]?.note && ` (${config.profiles[m]?.note})`}
+              </span>
+            ))}
+          </p>
+        )}
       </PageHeader>
 
       <section aria-label="Treasury and council" className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line shadow-card lg:grid-cols-4">
@@ -135,7 +147,7 @@ export function CouncilPage() {
         <p className="rounded-md bg-sunk px-4 py-3 text-sm text-ink-soft">
           {actor.kind === "guest"
             ? councilNames.length > 0
-              ? `Choose ${councilNames.join(" or ")} in the switcher at the top to vote as a council member.`
+              ? `Choose ${councilNames.length > 2 ? `${councilNames.slice(0, -1).join(", ")} or ${councilNames.at(-1)}` : councilNames.join(" or ")} in the switcher at the top to vote as a council member.`
               : "Connect a council member's wallet to vote."
             : `You're viewing as ${actor.name}. Only council members vote and file proposals here, but every vote is public.`}
         </p>

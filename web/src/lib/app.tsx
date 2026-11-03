@@ -209,9 +209,9 @@ export function AppProvider({ config, children }: { config: AppConfig; children:
   const displayName = useCallback(
     (accountId: string) => {
       if (accountId === config.dao) return config.daoName;
-      return persona(accountId)?.name ?? accountId;
+      return persona(accountId)?.name ?? config.profiles[accountId]?.name ?? accountId;
     },
-    [config.dao, config.daoName, persona],
+    [config.dao, config.daoName, config.profiles, persona],
   );
 
   const value: AppState = {

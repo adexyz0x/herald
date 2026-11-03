@@ -65,10 +65,11 @@ impl Demo {
         Ok(())
     }
 
-    /// Files a proposal and has the full council approve it.
+    /// Files a proposal and has a majority of the council approve it.
     async fn pass(&self, description: &str, kind: &Value) -> anyhow::Result<u64> {
         let id = self.propose(&self.council[0], description, kind).await?;
-        for member in &self.council {
+        // Sputnik passes a proposal once more than half the council approves; a later vote would fail.
+        for member in self.council.iter().take(self.council.len() / 2 + 1) {
             self.vote(member, id, kind).await?;
         }
         Ok(id)
@@ -191,12 +192,13 @@ async fn main() -> anyhow::Result<()> {
     herald.call("new").transact().await?.into_result()?;
 
     let ade = make("ade", 50).await?;
-    let bayo = make("bayo", 50).await?;
+    let oliver = make("oliver", 50).await?;
+    let amelia = make("amelia", 50).await?;
     let dao = make("beacon", 600).await?.deploy(SPUTNIK).await?.into_result()?;
     dao.call("new")
         .args_json(json!({
             "config": { "name": "beacon", "purpose": "Beacon Collective ambassador treasury", "metadata": "" },
-            "policy": [ade.id(), bayo.id()],
+            "policy": [ade.id(), oliver.id(), amelia.id()],
         }))
         .max_gas()
         .transact()
@@ -211,7 +213,7 @@ async fn main() -> anyhow::Result<()> {
     let lina = make("lina", 20).await?;
     let sol = make("sol", 20).await?;
 
-    let d = Demo { worker, herald, dao, council: vec![ade.clone(), bayo.clone()] };
+    let d = Demo { worker, herald, dao, council: vec![ade.clone(), oliver.clone(), amelia.clone()] };
 
     println!("Launching campaigns through DAO votes...");
     d.launch(
@@ -276,7 +278,7 @@ async fn main() -> anyhow::Result<()> {
         .submit(&cleo, 0, Some(0), None, &format!("{x}/cleo_onchain/status/13"), "Thread on how Beacon routes payouts")
         .await?;
     d.wait_out_challenge(auto).await?;
-    d.act(&bayo, "finalize", json!({ "submission_id": auto })).await?;
+    d.act(&oliver, "finalize", json!({ "submission_id": auto })).await?;
     // Lina reaches Trusted, then a deleted thread gets vetoed inside its window.
     for post in ["21", "22"] {
         let id = d.submit(&lina, 0, Some(0), None, &format!("{x}/lina_builds/status/{post}"), "").await?;
@@ -316,7 +318,8 @@ async fn main() -> anyhow::Result<()> {
 
     let personas = vec![
         Persona { account: ade, name: "Ade", role: "council" },
-        Persona { account: bayo, name: "Bayo", role: "council" },
+        Persona { account: oliver, name: "Oliver", role: "council" },
+        Persona { account: amelia, name: "Amelia", role: "council" },
         Persona { account: kemi, name: "Kemi", role: "reviewer" },
         Persona { account: marco, name: "Marco", role: "reviewer" },
         Persona { account: cleo, name: "Cleo", role: "creator" },

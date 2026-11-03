@@ -10,6 +10,9 @@
 #   ./scripts/testnet.sh campaign pilot/launch-week.json a.testnet
 #                                                            propose a campaign from a file, as a.testnet
 #   ./scripts/testnet.sh vote 0 a.testnet                    vote yes on proposal 0, as a.testnet
+#   ./scripts/testnet.sh pending                             submissions waiting on a reviewer, with proof links
+#   ./scripts/testnet.sh approve 3 [reviewer.testnet]        approve and pay submission 3
+#   ./scripts/testnet.sh reject 3 "reason" [reviewer.testnet] reject submission 3 with a reason
 #
 # DRY=1 prints what a step would send and stops before signing.
 # Steps sign with keys in this Mac's keychain, put there when the accounts were created. Test NEAR
@@ -21,7 +24,7 @@ HERALD="${HERALD:-herald.testnet}"
 DAO_NAME="${DAO_NAME:-herald-dao}"
 DAO="$DAO_NAME.sputnik-v2.testnet"
 FACTORY="sputnik-v2.testnet"
-RPC="https://test.rpc.fastnear.com"
+RPC="${RPC:-https://test.rpc.fastnear.com}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 confirm() {
@@ -148,8 +151,48 @@ EOF
       sign-as "$voter" network-config testnet sign-with-keychain send
     ;;
 
+  pending)
+    read -r -d '' list_open <<'EOF' || true
+import json, sys
+title = sys.argv[1]
+for s in json.load(sys.stdin):
+    if s["status"] in ("Pending", "Challenge", "AwaitingDao", "Approved"):
+        amount = int(s["amount"]) / 1e24
+        print(f"#{s['id']} {s['status']:<11} {s['creator']} · {s['deliverable']} · {amount:g} NEAR · {title}")
+        print(f"    proof: {s['proof_url']}")
+        if s["note"]:
+            print(f"    note: {s['note']}")
+EOF
+    rpc_view "$HERALD" get_campaigns '{"from_index":0,"limit":100}' |
+      python3 -c 'import json,sys; [print(c["id"], c["title"]) for c in json.load(sys.stdin)]' |
+      while read -r id title; do
+        rpc_view "$HERALD" get_campaign_submissions "{\"campaign_id\":$id,\"from_index\":0,\"limit\":100}" | python3 -c "$list_open" "$title"
+      done
+    ;;
+
+  approve | reject)
+    action="$1"
+    id="${2:-}"
+    [[ "$id" =~ ^[0-9]+$ ]] || { echo "Usage: ./scripts/testnet.sh $action <submission id> ..."; exit 1; }
+    if [ "$action" = "approve" ]; then
+      reviewer="${3:-amelia-herald.testnet}"
+      args="{\"submission_id\":$id}"
+      what="Approve and pay submission #$id, as $reviewer."
+    else
+      reason="${3:-}"
+      reviewer="${4:-amelia-herald.testnet}"
+      [ -n "$reason" ] || { echo "Give a reason the creator can act on."; exit 1; }
+      args=$(python3 -c 'import json,sys; print(json.dumps({"submission_id": int(sys.argv[1]), "reason": sys.argv[2]}))' "$id" "$reason")
+      what="Reject submission #$id, as $reviewer: \"$reason\""
+    fi
+    confirm "$what"
+    near contract call-function as-transaction "$HERALD" "$action" json-args "$args" \
+      prepaid-gas '100.0 Tgas' attached-deposit '0 NEAR' \
+      sign-as "$reviewer" network-config testnet sign-with-keychain send
+    ;;
+
   *)
-    sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
     ;;
 esac
