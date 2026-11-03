@@ -4,7 +4,6 @@ import { setupIntearWallet } from "@near-wallet-selector/intear-wallet";
 import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
 import { setupModal, type WalletSelectorModal } from "@near-wallet-selector/modal-ui";
 import "@near-wallet-selector/modal-ui/styles.css";
-import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 import type { Call } from "./herald";
 import type { Executor } from "./signer";
 
@@ -26,8 +25,9 @@ export async function setupWallets(rpcUrl: string, heraldId: string): Promise<Wa
       explorerUrl: "https://testnet.nearblocks.io",
       indexerUrl: "https://testnet-api.kitwallet.app",
     },
-    // MyNearWallet works in any browser with nothing to install, which suits first-time testers.
-    modules: [setupMyNearWallet(), setupMeteorWallet(), setupIntearWallet()],
+    // Meteor first: it runs in the browser, creates testnet accounts, and is where MyNearWallet now
+    // sends its users (MyNearWallet stopped approving app connections on 1 November 2026).
+    modules: [setupMeteorWallet(), setupIntearWallet()],
   });
   // Signing in adds a limited key for Herald only, so reviewers can approve without a wallet
   // prompt each time. Anything that moves money, or calls the DAO, still asks the wallet.

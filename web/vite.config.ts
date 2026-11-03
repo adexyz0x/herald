@@ -9,7 +9,7 @@ export default defineConfig({
   // polyfill reads NODE_DEBUG as it loads.
   define: { global: "globalThis", "process.env.NODE_DEBUG": "undefined" },
   build: {
-    // The app itself (React and Motion) is about 155 kB gzipped. Wallet code (about 480 kB gzipped)
+    // The app itself (React and Motion) is about 155 kB gzipped. Wallet code (about 425 kB gzipped)
     // and the demo signer are split out and load only after the page is up, when they're needed.
     chunkSizeWarningLimit: 1700,
     rolldownOptions: {
