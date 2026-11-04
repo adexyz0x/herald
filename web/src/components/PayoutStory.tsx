@@ -29,6 +29,7 @@ interface Step {
 
 const ring: Record<StepTone, string> = { accent: "var(--accent)", gold: "var(--gold)", dao: "var(--dao)", paid: "var(--paid)" };
 const wash: Record<StepTone, string> = { accent: "var(--accent-wash)", gold: "var(--gold-wash)", dao: "var(--dao-wash)", paid: "var(--paid-wash)" };
+const deep: Record<StepTone, string> = { accent: "var(--stage-accent)", gold: "var(--stage-gold)", dao: "var(--stage-dao)", paid: "var(--stage-paid)" };
 
 const STEPS: Step[] = [
   {
@@ -165,17 +166,16 @@ function StoryCard({ step, play, compact = false }: { step: Step; play: boolean;
   );
 }
 
-/** The illustration area: a tinted stage that takes the color of the step being read. */
+/** The illustration area: a stage in a deep shade of the step being read, so the light card stands out on the page. */
 function StageFrame({ step, index, children }: { step: Step; index: number; children: ReactNode }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-line p-4 transition-[background-color] duration-500 sm:p-8" style={{ backgroundColor: wash[step.tone] } as CSSProperties}>
-      <div className="diaper pointer-events-none absolute inset-0" />
-      <p className="relative mb-4 flex items-center gap-2 font-data text-[12.5px] text-ink-soft">
-        <span className="size-2 rounded-full transition-colors duration-500" style={{ backgroundColor: ring[step.tone] }} />
+    <div className="stage relative overflow-hidden rounded-xl p-4 shadow-pop transition-[background-color] duration-500 sm:p-8" style={{ backgroundColor: deep[step.tone] } as CSSProperties}>
+      <p className="relative mb-4 flex items-center gap-2 font-data text-[12.5px] text-page">
+        <span className="size-2 rounded-full bg-page" />
         Step {index + 1} of {STEPS.length}
         <span className="ml-auto flex gap-1">
           {STEPS.map((s, i) => (
-            <span key={s.title} className="h-1 w-5 rounded-full transition-colors duration-500" style={{ backgroundColor: i <= index ? ring[s.tone] : "var(--line-strong)" }} />
+            <span key={s.title} className={`h-1 w-5 rounded-full transition-colors duration-500 ${i <= index ? "bg-page" : "bg-page/25"}`} />
           ))}
         </span>
       </p>

@@ -50,7 +50,7 @@ export function Home() {
       <section className="relative isolate overflow-x-clip pt-2 sm:pt-6 lg:pt-8">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-12">
           <motion.div className="flex flex-col gap-7" variants={stagger(0.08)} initial="hidden" animate="show">
-            <h1 className="font-display text-[clamp(46px,6.2vw,80px)] leading-[0.98] font-normal tracking-[-0.025em] text-ink">
+            <h1 className="font-display text-[clamp(46px,6.2vw,80px)] leading-[1.02] tracking-[-0.02em] text-ink">
               {HEADLINE.map((line) => (
                 <span key={line} className="block overflow-hidden pb-[0.08em]">
                   <motion.span className="block" variants={lineUp}>

@@ -44,6 +44,12 @@
   --veto-ink: #7e2e29;
   --veto-wash: #f5e3df;
 
+  /* Deep shades of the route colors, for stages that hold a light card. Cream text reads on all four. */
+  --stage-accent: #34425a;
+  --stage-gold: #84622f;
+  --stage-dao: #5c3f53;
+  --stage-paid: #435b44;
+
   /* Gilt: champagne catching the light, for hairlines and the receipt's edge. */
   --gilt: linear-gradient(100deg, #b38b4d 0%, #e9d8b4 46%, #c9a76b 62%, #9c7740 100%);
   --shimmer: rgb(255 255 255 / 0.7);
@@ -52,7 +58,7 @@
   --shadow-card: 0 1px 2px rgb(33 28 23 / 0.04), 0 4px 14px -6px rgb(33 28 23 / 0.1);
   --shadow-pop: 0 28px 56px -24px rgb(33 28 23 / 0.32), 0 2px 6px rgb(33 28 23 / 0.05);
 
-  --font-display: "Bodoni Moda Variable", "Bodoni 72", Didot, Georgia, serif;
+  --font-display: "Newsreader Variable", Georgia, "Times New Roman", serif;
   --font-body: "Public Sans", ui-sans-serif, system-ui, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
@@ -143,15 +149,25 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 
+/* Display type sits at a sturdy medium weight with figures on the line. A weight utility still wins. */
+@layer base {
+  .font-display {
+    font-weight: 500;
+    font-variant-numeric: lining-nums;
+  }
+}
+
 /* A gilt hairline across the top of the app. */
 .gilt-band {
   height: 2px;
   background: var(--gilt);
 }
 
-/* The same lozenge diaper, in ink, for light stages like the payout story. */
-.diaper {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='%23000' stroke-opacity='0.05'/%3E%3C/svg%3E");
+/* A stage in a deep route color, for the payout story: soft light from the top left over a cream lozenge diaper. */
+.stage {
+  background-image:
+    radial-gradient(120% 90% at 0% 0%, rgb(255 255 255 / 0.13), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='%23fff' stroke-opacity='0.08'/%3E%3C/svg%3E");
 }
 
 /* A soft wash of one tincture behind a page header. */
