@@ -231,7 +231,10 @@ export function AppProvider({ config, children }: { config: AppConfig; children:
     dismissToast,
     wallet,
   };
-  return <AppContext.Provider value={value}>{clockReady ? children : null}</AppContext.Provider>;
+  // The local sandbox can run far ahead of real time, so wait for its clock before drawing. A
+  // public network's clock matches real time: draw at once and correct when the sync lands.
+  const ready = clockReady || config.network !== "local";
+  return <AppContext.Provider value={value}>{ready ? children : null}</AppContext.Provider>;
 }
 
 /**

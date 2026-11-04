@@ -8,8 +8,92 @@
     <meta name="theme-color" content="#0E1014" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Herald: ambassador payouts on NEAR</title>
+    <style>
+      /*
+       * Boot screen, drawn before the app's code arrives: the seal is struck, its ring turns and
+       * the H is engraved. It fades in only if loading takes a moment, and the app fades it out
+       * once it has drawn itself (src/lib/boot.ts).
+       */
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: grid;
+        place-items: center;
+        background: var(--page, #f4f6fa);
+        opacity: 0;
+        animation: boot-in 0.3s 0.3s ease-out forwards;
+      }
+      #boot::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: linear-gradient(90deg, #2747c9 0 34%, #d99a16 34% 56%, #6b3fb8 56% 74%, #1e7f55 74% 90%, #c2362f 90% 100%);
+      }
+      #boot svg {
+        width: 64px;
+        height: 64px;
+        animation: boot-strike 0.6s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      }
+      #boot .boot-ring {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: boot-turn 4s linear infinite;
+      }
+      #boot .boot-stroke {
+        fill: none;
+        stroke: #fff;
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-dasharray: 1 2;
+        stroke-dashoffset: 1;
+        opacity: 0;
+        animation: boot-draw 0.4s ease-out forwards;
+      }
+      #boot .boot-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+      @keyframes boot-in {
+        to { opacity: 1; }
+      }
+      @keyframes boot-strike {
+        from { transform: scale(0.82); }
+        to { transform: scale(1); }
+      }
+      @keyframes boot-turn {
+        to { transform: rotate(360deg); }
+      }
+      @keyframes boot-draw {
+        from { opacity: 1; stroke-dashoffset: 1; }
+        to { opacity: 1; stroke-dashoffset: 0; }
+      }
+      @media (prefers-color-scheme: dark) {
+        #boot { background: var(--page, #0b0e17); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot { animation-duration: 0s; }
+        #boot svg, #boot .boot-ring { animation: none; }
+        #boot .boot-stroke { animation: none; opacity: 1; stroke-dashoffset: 0; }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot" role="status">
+      <span class="boot-label">Loading Herald</span>
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="29" fill="var(--tincture-azure, #2747c9)" />
+        <circle class="boot-ring" cx="32" cy="32" r="22" fill="none" stroke="var(--tincture-or, #d99a16)" stroke-width="2" stroke-dasharray="3 3" />
+        <path class="boot-stroke" pathLength="1" d="M22 20v24" style="animation-delay: 0.5s" />
+        <path class="boot-stroke" pathLength="1" d="M42 20v24" style="animation-delay: 0.62s" />
+        <path class="boot-stroke" pathLength="1" d="M22 32h20" style="animation-delay: 0.74s" />
+      </svg>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

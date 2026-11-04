@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Shell, Wordmark } from "./components/Shell";
 import { EmptyState, LinkButton, Toasts } from "./components/ui";
 import { AppProvider, useApp, useChainData } from "./lib/app";
+import { dismissBootScreen } from "./lib/boot";
 import { loadConfig, type AppConfig } from "./lib/config";
 import { ease } from "./lib/motion";
 import { href, useRoute, type RouteMatch } from "./lib/router";
@@ -47,6 +48,8 @@ const TITLES: Record<RouteMatch["page"], string> = {
 function Routes() {
   const route = useRoute();
   const { displayName } = useApp();
+
+  useEffect(() => dismissBootScreen(), []);
 
   useEffect(() => {
     document.title = route.page === "creator" ? `${displayName(route.accountId)} · Herald` : TITLES[route.page];
@@ -119,6 +122,7 @@ function ChainCheck() {
 }
 
 function SetupScreen({ missingDemo, detail }: { missingDemo: boolean; detail: string }) {
+  useEffect(() => dismissBootScreen(), []);
   return (
     <div className="mx-auto flex min-h-screen max-w-[640px] flex-col justify-center gap-6 px-4 py-12">
       <Wordmark />
