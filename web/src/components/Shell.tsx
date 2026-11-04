@@ -9,16 +9,16 @@ import { Avatar } from "./chain";
 import { Button } from "./ui";
 
 const roleLabel: Record<Role, string> = { council: "Council", reviewer: "Reviewer", creator: "Creator" };
-/** Roles wear the tincture of what they do: the council votes (purpure), reviewers review (azure), creators get paid (vert). */
+/** Roles wear the color of what they do: the council votes (aubergine), reviewers review (slate), creators get paid (moss). */
 const roleDot: Record<Role, string> = { council: "bg-dao", reviewer: "bg-accent", creator: "bg-paid" };
 
 export function Wordmark() {
   return (
     <a href={href.home} className="flex items-center gap-2.5" aria-label="Herald home">
       <svg viewBox="0 0 64 64" className="size-8" aria-hidden="true">
-        <circle cx="32" cy="32" r="29" fill="var(--tincture-azure)" />
+        <circle cx="32" cy="32" r="29" fill="var(--ink)" />
         <circle className="wordmark-ring" cx="32" cy="32" r="22" fill="none" stroke="var(--tincture-or)" strokeWidth="2" strokeDasharray="3 3" />
-        <path d="M22 20v24M42 20v24M22 32h20" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
+        <path d="M22 20v24M42 20v24M22 32h20" stroke="var(--page)" strokeWidth="5" strokeLinecap="round" />
       </svg>
       <span className="font-display text-[26px] leading-none tracking-tight text-ink">Herald</span>
     </a>
@@ -271,7 +271,7 @@ export function Shell({ route, children }: { route: RouteMatch; children: ReactN
         Skip to content
       </a>
       <header className="sticky top-0 z-30 border-b border-line bg-page/85 backdrop-blur-md">
-        <div className="tincture-band" aria-hidden="true" />
+        <div className="gilt-band" aria-hidden="true" />
         <div className="mx-auto flex max-w-[1180px] items-center gap-6 px-4 py-3 sm:px-6">
           <Wordmark />
           <nav aria-label="Main" className="hidden items-center gap-1 md:flex">

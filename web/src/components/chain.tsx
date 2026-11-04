@@ -61,7 +61,7 @@ export function AccountLink({ accountId, showId = false }: { accountId: string; 
   );
 }
 
-/** Each route owns a tincture: gold for automatic, azure for a reviewer, purpure for the DAO. */
+/** Each route owns a color: bronze for automatic, slate for a reviewer, aubergine for the DAO. */
 const routeStyle: Record<Route, { ring: string; ink: string; wash: string; label: string; around: string }> = {
   Auto: { ring: "var(--gold)", ink: "var(--gold-ink)", wash: "var(--gold-wash)", label: "Auto", around: "PAID · AUTO APPROVAL · PAID · AUTO APPROVAL · " },
   Reviewer: { ring: "var(--accent)", ink: "var(--accent-strong)", wash: "var(--accent-wash)", label: "Reviewer", around: "PAID · REVIEWER APPROVAL · PAID · REVIEWER · " },
@@ -151,7 +151,7 @@ type StampTone = "veto" | "dao" | "ink";
 const stampColor: Record<StampTone, string> = { veto: "var(--veto)", dao: "var(--dao)", ink: "var(--ink-faint)" };
 
 /**
- * A decision, stamped like the seal on a payout: VETOED in gules, PASSED in purpure, REJECTED in
+ * A decision, stamped like the seal on a payout: VETOED in oxblood, PASSED in aubergine, REJECTED in
  * gray. With `stamp` it slams down and leaves a ring of ink. It is decorative, since a chip or
  * text nearby always says the same thing in words.
  */
@@ -257,7 +257,7 @@ export function StatusChip({ status, endsAtMs }: { status: SubmissionStatus; end
 
 const tierChevrons: Record<Tier, number> = { Newcomer: 1, Trusted: 2, Core: 3 };
 
-/** Rank as stacked chevrons. Core, the top rank, is struck in gold. */
+/** Rank as stacked chevrons. Core, the top rank, is struck in bronze. */
 export function RankBadge({ tier, size = "md" }: { tier: Tier; size?: "sm" | "md" }) {
   const count = tierChevrons[tier];
   const dim = size === "sm" ? "size-3" : "size-4";
@@ -276,7 +276,7 @@ export function RankBadge({ tier, size = "md" }: { tier: Tier; size?: "sm" | "md
   );
 }
 
-/** Budget as one bar: paid in vert, reserved in gold, the rest empty. Fills in when it appears. */
+/** Budget as one bar: paid in moss, reserved in bronze, the rest empty. Fills in when it appears. */
 export function BudgetBar({ budget, paid, reserved, compact = false }: { budget: string; paid: string; reserved: string; compact?: boolean }) {
   const total = BigInt(budget);
   const pct = (part: string) => (total > 0n ? Number((BigInt(part) * 10000n) / total) / 100 : 0);

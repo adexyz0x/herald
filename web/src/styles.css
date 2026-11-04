@@ -1,61 +1,58 @@
 @import "tailwindcss";
 
 /*
- * Herald design tokens. Colors are heraldic tinctures, and each one has a job:
- * azure is the product, or (gold) is automatic payouts, purpure is the DAO vote,
- * vert is money paid, gules is a veto. Every component reads these variables.
+ * Herald design tokens, in neutral rich tones: a warm stone page, espresso ink and champagne
+ * bronze, with one muted jewel tone per meaning. Bronze is an automatic payout, slate is a
+ * reviewer (and links), aubergine is the DAO vote, moss is money paid, oxblood is a veto.
+ * Every component reads these variables. The site is light only.
  */
 :root {
-  --tincture-azure: #2747c9;
-  --tincture-or: #d99a16;
-  --tincture-purpure: #6b3fb8;
-  --tincture-vert: #1e7f55;
-  --tincture-gules: #c2362f;
-  --tincture-sable: #12141b;
-  --tincture-argent: #f4f6fa;
+  --tincture-azure: #3e4c63;
+  --tincture-or: #a9844a;
+  --tincture-purpure: #6c4a62;
+  --tincture-vert: #4f6b4e;
+  --tincture-gules: #9a3b34;
+  --tincture-sable: #211c17;
+  --tincture-argent: #f5f2ed;
 
   --page: var(--tincture-argent);
-  --surface: #ffffff;
-  --surface-sunk: #edf0f6;
+  --surface: #fdfcfa;
+  --surface-sunk: #eee9e2;
   --ink: var(--tincture-sable);
-  --ink-soft: #464c5c;
-  --ink-faint: #626a7e;
-  --line: #dfe3eb;
-  --line-strong: #c6ccd8;
+  --ink-soft: #4f473f;
+  --ink-faint: #6e655b;
+  /* Espresso, a shade lifted, for a primary button under the pointer. */
+  --ink-hover: #3a3129;
+  --line: #e4ded5;
+  --line-strong: #d2c9bc;
 
   --accent: var(--tincture-azure);
-  --accent-strong: #1b34a3;
-  --accent-wash: #e8ecfc;
-  --on-accent: #ffffff;
+  --accent-strong: #2c384b;
+  --accent-wash: #e8eaee;
+  --on-accent: #fdfcfa;
   --gold: var(--tincture-or);
-  --gold-ink: #7a5306;
-  --gold-wash: #fcf2dc;
+  --gold-ink: #6f5124;
+  --gold-wash: #f3eadb;
   --on-gold: var(--tincture-sable);
   --dao: var(--tincture-purpure);
-  --dao-ink: #4f2a90;
-  --dao-wash: #efe8fb;
+  --dao-ink: #553a4c;
+  --dao-wash: #f0e7ec;
   --paid: var(--tincture-vert);
-  --paid-ink: #145a3c;
-  --paid-wash: #e1f3ea;
+  --paid-ink: #3b513b;
+  --paid-wash: #e6ece3;
   --veto: var(--tincture-gules);
-  --veto-ink: #962620;
-  --veto-wash: #fae5e3;
+  --veto-ink: #7e2e29;
+  --veto-wash: #f5e3df;
 
-  /* The hero's tabard: an azure field with gold trim. */
-  --tabard: #2342b8;
-  --tabard-deep: #172b80;
-  --on-tabard: #ffffff;
-  --on-tabard-soft: #d4dcff;
-  /* Tinctures lightened to read on the tabard's azure field (all above 4.5:1). */
-  --on-tabard-gold: #f5d27f;
-  --on-tabard-dao: #ddd0fd;
-  --on-tabard-veto: #f9bbb5;
-  --shimmer: rgb(255 255 255 / 0.75);
+  /* Gilt: champagne catching the light, for hairlines and the receipt's edge. */
+  --gilt: linear-gradient(100deg, #b38b4d 0%, #e9d8b4 46%, #c9a76b 62%, #9c7740 100%);
+  --shimmer: rgb(255 255 255 / 0.7);
+  --scrim: rgb(33 28 23 / 0.42);
 
-  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 2px 10px -4px rgb(16 24 40 / 0.08);
-  --shadow-pop: 0 18px 40px -16px rgb(16 24 40 / 0.32);
+  --shadow-card: 0 1px 2px rgb(33 28 23 / 0.04), 0 4px 14px -6px rgb(33 28 23 / 0.1);
+  --shadow-pop: 0 28px 56px -24px rgb(33 28 23 / 0.32), 0 2px 6px rgb(33 28 23 / 0.05);
 
-  --font-display: "Gloock", Georgia, "Times New Roman", serif;
+  --font-display: "Bodoni Moda Variable", "Bodoni 72", Didot, Georgia, serif;
   --font-body: "Public Sans", ui-sans-serif, system-ui, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
@@ -64,79 +61,9 @@
   --radius-lg: 16px;
   --radius-xl: 24px;
 
-  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 38%, transparent);
+  /* A bronze ring with a gap, at least 3:1 against the page. */
+  --focus-ring: 0 0 0 2px var(--page), 0 0 0 4px var(--gold);
   color-scheme: light;
-}
-
-/* Dark mode keeps the tinctures but sets them on a navy-black field instead of flat gray. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --page: #0b0e17;
-    --surface: #121726;
-    --surface-sunk: #1a2033;
-    --ink: #eef1f8;
-    --ink-soft: #b3bacb;
-    --ink-faint: #8790a6;
-    --line: #232a40;
-    --line-strong: #323b56;
-    --accent: #8197ff;
-    --accent-strong: #aebcff;
-    --accent-wash: #1b2552;
-    --on-accent: #0b0e17;
-    --gold: #ebb443;
-    --gold-ink: #f5d27f;
-    --gold-wash: #382a0c;
-    --dao: #b596f7;
-    --dao-ink: #d6c6fc;
-    --dao-wash: #2a1f4a;
-    --paid: #3fbf88;
-    --paid-ink: #93e3bf;
-    --paid-wash: #0e2f22;
-    --veto: #ef6b63;
-    --veto-ink: #f7afa9;
-    --veto-wash: #3c1715;
-    --tabard: #1c2c78;
-    --tabard-deep: #10194a;
-    --on-tabard-soft: #c9d2ff;
-    --shimmer: rgb(255 255 255 / 0.06);
-    --shadow-card: 0 0 0 transparent;
-    --shadow-pop: 0 20px 44px -16px rgb(0 0 0 / 0.7);
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme="dark"] {
-  --page: #0b0e17;
-  --surface: #121726;
-  --surface-sunk: #1a2033;
-  --ink: #eef1f8;
-  --ink-soft: #b3bacb;
-  --ink-faint: #8790a6;
-  --line: #232a40;
-  --line-strong: #323b56;
-  --accent: #8197ff;
-  --accent-strong: #aebcff;
-  --accent-wash: #1b2552;
-  --on-accent: #0b0e17;
-  --gold: #ebb443;
-  --gold-ink: #f5d27f;
-  --gold-wash: #382a0c;
-  --dao: #b596f7;
-  --dao-ink: #d6c6fc;
-  --dao-wash: #2a1f4a;
-  --paid: #3fbf88;
-  --paid-ink: #93e3bf;
-  --paid-wash: #0e2f22;
-  --veto: #ef6b63;
-  --veto-ink: #f7afa9;
-  --veto-wash: #3c1715;
-  --tabard: #1c2c78;
-  --tabard-deep: #10194a;
-  --on-tabard-soft: #c9d2ff;
-  --shimmer: rgb(255 255 255 / 0.06);
-  --shadow-card: 0 0 0 transparent;
-  --shadow-pop: 0 20px 44px -16px rgb(0 0 0 / 0.7);
-  color-scheme: dark;
 }
 
 @theme inline {
@@ -146,6 +73,7 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-ink-faint: var(--ink-faint);
+  --color-ink-hover: var(--ink-hover);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
@@ -165,12 +93,6 @@
   --color-veto: var(--veto);
   --color-veto-ink: var(--veto-ink);
   --color-veto-wash: var(--veto-wash);
-  --color-tabard: var(--tabard);
-  --color-on-tabard: var(--on-tabard);
-  --color-on-tabard-soft: var(--on-tabard-soft);
-  --color-on-tabard-gold: var(--on-tabard-gold);
-  --color-on-tabard-dao: var(--on-tabard-dao);
-  --color-on-tabard-veto: var(--on-tabard-veto);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-data: var(--font-data);
@@ -207,9 +129,13 @@ h3 {
   box-shadow: var(--focus-ring);
   border-radius: var(--radius-sm);
 }
+/* Round controls keep their shape when focused. */
+.rounded-full:focus-visible {
+  border-radius: 9999px;
+}
 
 ::selection {
-  background: var(--accent-wash);
+  background: var(--gold-wash);
 }
 
 .font-data {
@@ -217,50 +143,15 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 
-/* Every tincture in one thin band across the top of the app: the brand in a single line. */
-.tincture-band {
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--tincture-azure) 0 34%,
-    var(--tincture-or) 34% 56%,
-    var(--tincture-purpure) 56% 74%,
-    var(--tincture-vert) 74% 90%,
-    var(--tincture-gules) 90% 100%
-  );
-}
-
-/*
- * The tabard: an azure field with a faint lozenge diaper, a touch of purpure in one corner
- * and a gold hairline inside the edge, like the trim on a herald's coat. The diaper and the
- * trim are separate layers (`.tabard-diaper`, and an SVG in the hero) so they can move.
- */
-.tabard {
-  position: relative;
-  isolation: isolate;
-  color: var(--on-tabard);
-  background-color: var(--tabard);
-  background-image:
-    radial-gradient(110% 90% at 100% 0%, color-mix(in srgb, var(--tincture-purpure) 42%, transparent) 0%, transparent 60%),
-    radial-gradient(80% 70% at 0% 100%, color-mix(in srgb, var(--tincture-or) 16%, transparent) 0%, transparent 65%),
-    linear-gradient(160deg, var(--tabard) 0%, var(--tabard-deep) 100%);
-  border-radius: var(--radius-xl);
-}
-.tabard-diaper {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='white' stroke-opacity='0.07'/%3E%3C/svg%3E");
+/* A gilt hairline across the top of the app. */
+.gilt-band {
+  height: 2px;
+  background: var(--gilt);
 }
 
 /* The same lozenge diaper, in ink, for light stages like the payout story. */
 .diaper {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='%23000' stroke-opacity='0.05'/%3E%3C/svg%3E");
-}
-:root[data-theme="dark"] .diaper {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='white' stroke-opacity='0.06'/%3E%3C/svg%3E");
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .diaper {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M18 1 35 18 18 35 1 18Z' fill='none' stroke='white' stroke-opacity='0.06'/%3E%3C/svg%3E");
-  }
 }
 
 /* A soft wash of one tincture behind a page header. */
@@ -277,35 +168,6 @@ h3 {
   from {
     opacity: 0;
     transform: scale(0.92);
-  }
-}
-
-/*
- * The headline's foil: once, after the lines have risen, a gold glint passes across the letters.
- * It sits on a copy of the text laid over the real one, so if a browser can't clip it, the white
- * headline underneath is untouched. The copy is generated content with empty alt text, so screen
- * readers and the page's text read each line once.
- */
-.foil-glint::after {
-  content: attr(data-glint) / "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  user-select: none;
-  background-image: linear-gradient(100deg, transparent 42%, var(--on-tabard-gold) 50%, transparent 58%);
-  background-size: 250% 100%;
-  background-position: 100% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: foil-sweep 1.6s 1s cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-@keyframes foil-sweep {
-  from {
-    background-position: 100% 0;
-  }
-  to {
-    background-position: 0% 0;
   }
 }
 
@@ -386,7 +248,7 @@ a:hover > svg > .wordmark-ring {
   transform: rotate(90deg);
 }
 
-/* Foil: a band of light crosses a gold surface on hover, like light catching gilt. */
+/* Foil: a band of light crosses a button on hover, like light catching lacquer. */
 .foil {
   position: relative;
   overflow: hidden;
@@ -396,13 +258,33 @@ a:hover > svg > .wordmark-ring {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.5) 50%, transparent 65%);
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.16) 50%, transparent 65%);
   transform: translateX(-120%);
   pointer-events: none;
 }
 .foil:hover::after {
   transform: translateX(120%);
   transition: transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* The receipt: a gilt edge drawn as a gradient border. */
+.receipt-edge {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    var(--gilt) border-box;
+}
+
+/* Guilloché engraving turns very slowly, like a dial. */
+.guilloche-turn {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: guilloche-turn 240s linear infinite;
+}
+@keyframes guilloche-turn {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -415,7 +297,7 @@ a:hover > svg > .wordmark-ring {
   .marquee-track,
   .shimmer,
   .seal-ring,
-  .foil-glint::after {
+  .guilloche-turn {
     animation: none;
   }
   .marquee {

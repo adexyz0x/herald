@@ -1,4 +1,4 @@
-import "@fontsource/gloock/400.css";
+import "@fontsource-variable/bodoni-moda/opsz.css";
 import "@fontsource/public-sans/400.css";
 import "@fontsource/public-sans/500.css";
 import "@fontsource/public-sans/600.css";

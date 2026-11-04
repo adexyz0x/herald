@@ -4,10 +4,10 @@ import { toastDuration, useApp } from "../lib/app";
 import { ease, glide, quick } from "../lib/motion";
 
 type Variant = "primary" | "secondary" | "danger" | "ghost";
-type Size = "sm" | "md";
+type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-on-accent shadow-[inset_0_1px_0_rgb(255_255_255/0.14)] hover:bg-accent-strong",
+  primary: "bg-ink text-page shadow-[inset_0_1px_0_rgb(255_255_255/0.08)] hover:bg-ink-hover",
   secondary: "border border-line-strong bg-surface text-ink shadow-card hover:border-ink-faint",
   danger: "border border-veto/50 bg-veto-wash text-veto-ink hover:border-veto",
   ghost: "text-ink-soft hover:bg-sunk hover:text-ink",
@@ -15,6 +15,7 @@ const variants: Record<Variant, string> = {
 const sizes: Record<Size, string> = {
   sm: "h-8 px-3 text-[13px]",
   md: "h-10 px-4 text-sm",
+  lg: "h-12 px-6 text-[15px]",
 };
 /** Shared by buttons and button-styled links: color changes ease, presses sink slightly. */
 const buttonBase =
@@ -278,7 +279,7 @@ export function Modal({
       ref={ref}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className="m-auto w-[min(520px,calc(100vw-32px))] overflow-visible bg-transparent p-0 text-ink backdrop:bg-[rgb(8_10_18/0.55)] backdrop:backdrop-blur-[2px]"
+      className="m-auto w-[min(520px,calc(100vw-32px))] overflow-visible bg-transparent p-0 text-ink backdrop:bg-(--scrim) backdrop:backdrop-blur-[2px]"
     >
       {open && (
         <motion.div

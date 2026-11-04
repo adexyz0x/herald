@@ -9,40 +9,29 @@
     <title>Herald demo posts</title>
     <style>
       :root {
-        --page: #f4f6fa;
-        --surface: #ffffff;
-        --ink: #12141b;
-        --ink-soft: #464c5c;
-        --ink-faint: #626a7e;
-        --line: #dfe3eb;
-        --azure: #2747c9;
-        --or-ink: #7a5306;
-        --or-wash: #fcf2dc;
+        --page: #f5f2ed;
+        --surface: #fdfcfa;
+        --ink: #211c17;
+        --ink-soft: #4f473f;
+        --ink-faint: #6e655b;
+        --line: #e4ded5;
+        --accent: #3e4c63;
+        --gold-ink: #6f5124;
+        --gold-wash: #f3eadb;
+        --paid-ink: #3b513b;
+        --veto-ink: #7e2e29;
+        --gilt: linear-gradient(100deg, #b38b4d 0%, #e9d8b4 46%, #c9a76b 62%, #9c7740 100%);
         color-scheme: light;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --page: #0b0e17;
-          --surface: #121726;
-          --ink: #eef1f8;
-          --ink-soft: #b3bacb;
-          --ink-faint: #8790a6;
-          --line: #232a40;
-          --azure: #8197ff;
-          --or-ink: #f5d27f;
-          --or-wash: #382a0c;
-          color-scheme: dark;
-        }
       }
       * { box-sizing: border-box; }
       body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.6 "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
-      .band { height: 3px; background: linear-gradient(90deg, #2747c9 0 34%, #d99a16 34% 56%, #6b3fb8 56% 74%, #1e7f55 74% 90%, #c2362f 90% 100%); }
+      .band { height: 2px; background: var(--gilt); }
       main { max-width: 640px; margin: 0 auto; padding: 36px 16px 64px; }
-      a { color: var(--azure); }
-      h1 { font: 400 clamp(30px, 5vw, 40px)/1.1 Georgia, "Times New Roman", serif; margin: 20px 0 8px; }
-      .banner { margin: 16px 0 28px; padding: 12px 14px; border-radius: 10px; background: var(--or-wash); color: var(--or-ink); font-size: 14.5px; }
+      a { color: var(--accent); }
+      h1 { font: 400 clamp(30px, 5vw, 40px)/1.1 "Bodoni 72", Didot, "Bodoni MT", Georgia, serif; margin: 20px 0 8px; }
+      .banner { margin: 16px 0 28px; padding: 12px 14px; border-radius: 10px; background: var(--gold-wash); color: var(--gold-ink); font-size: 14.5px; }
       article { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin: 16px 0; scroll-margin-top: 16px; }
-      article:target { outline: 2px solid var(--azure); outline-offset: 2px; }
+      article:target { outline: 2px solid var(--accent); outline-offset: 2px; }
       .meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; font-size: 13.5px; color: var(--ink-faint); }
       .meta strong { color: var(--ink); font-size: 15px; }
       .tag { border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; font-size: 12px; }
