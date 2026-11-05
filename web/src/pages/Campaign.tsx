@@ -2,7 +2,7 @@ import { AnimatePresence } from "motion/react";
 import { useMemo, useState } from "react";
 import { BudgetBar, Near, RankBadge, RouteTag, Seal, When } from "../components/chain";
 import { SubmissionRow } from "../components/SubmissionRow";
-import { Button, EmptyState, ExternalLink, Field, LinkButton, PageHeader, Panel, SectionTitle, Segmented, inputClass } from "../components/ui";
+import { Button, EmptyState, ExternalLink, Field, LinkButton, PageHeader, Panel, SectionTitle, Segmented, SideColumn, inputClass } from "../components/ui";
 import { useApp, useChainData } from "../lib/app";
 import { formatDuration, formatNear, parseNear } from "../lib/format";
 import { useDaoContext } from "../lib/hooks";
@@ -149,7 +149,7 @@ export function CampaignPage({ id }: { id: number }) {
           </section>
         </div>
 
-        <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
+        <SideColumn>
           {actor.kind === "guest" ? (
             <Panel title="Join this campaign" tone="accent">
               <p className="text-sm text-ink-soft">
@@ -192,7 +192,7 @@ export function CampaignPage({ id }: { id: number }) {
               <p className="text-sm text-ink-soft">The DAO closed it and took back the unreserved budget. Payouts already in a challenge window can still be paid.</p>
             </Panel>
           )}
-        </aside>
+        </SideColumn>
       </div>
     </div>
   );

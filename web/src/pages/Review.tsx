@@ -1,7 +1,7 @@
 import { AnimatePresence } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { SubmissionRow, type RowContext } from "../components/SubmissionRow";
-import { PageHeader, Panel, SectionTitle, Segmented, type Tone } from "../components/ui";
+import { PageHeader, Panel, SectionTitle, Segmented, SideColumn, type Tone } from "../components/ui";
 import { useApp, useChainNow } from "../lib/app";
 import type { Campaign, Submission } from "../lib/herald";
 import { useDaoContext, useProgram } from "../lib/hooks";
@@ -90,7 +90,7 @@ export function ReviewPage() {
             </Section>
           </div>
 
-          <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
+          <SideColumn>
             <Panel title="Reviewing well" tone="accent">
               <ol className="flex flex-col gap-3.5 text-[14px] text-ink-soft">
                 {[
@@ -109,7 +109,7 @@ export function ReviewPage() {
               </ol>
             </Panel>
             <p className="px-1 text-[13px] text-ink-faint">You can't review your own work. Herald checks this on chain, along with every limit on this page.</p>
-          </aside>
+          </SideColumn>
         </div>
       )}
     </div>

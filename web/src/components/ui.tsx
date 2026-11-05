@@ -149,6 +149,32 @@ export function Panel({
   );
 }
 
+/** A wide-screen sidebar that stays in view while the page scrolls, but only when all of it fits
+ * under the header; on a short or zoomed-in window it scrolls with the page, so its foot stays reachable. */
+export function SideColumn({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLElement>(null);
+  const [fits, setFits] = useState(true);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // top-24 is 96px; keep a little room below it too.
+    const check = () => setFits(el.offsetHeight + 96 + 24 <= window.innerHeight);
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    window.addEventListener("resize", check);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", check);
+    };
+  }, []);
+  return (
+    <aside ref={ref} className={`flex flex-col gap-6 lg:self-start ${fits ? "lg:sticky lg:top-24" : ""}`}>
+      {children}
+    </aside>
+  );
+}
+
 /** Section heading with a tincture dot, a live count and one line of explanation. */
 export function SectionTitle({ title, count, hint, tone = "ink", action }: { title: string; count?: number; hint?: string; tone?: Tone; action?: ReactNode }) {
   return (

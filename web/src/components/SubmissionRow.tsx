@@ -76,10 +76,21 @@ export function SubmissionRow({
       </Button>,
     );
   }
+  // The amount was fixed at submission and only the creator can be paid, so anyone may release it.
   if (windowDone && actor.kind !== "guest") {
+    const mine = me === sub.creator;
     actions.push(
-      <ActionButton key="finalize" variant="primary" size="sm" run={() => execute(herald.finalize(sub.id), { success: "Window closed. Payout sent." })}>
-        Pay now
+      <ActionButton
+        key="finalize"
+        variant="primary"
+        size="sm"
+        run={() =>
+          execute(herald.finalize(sub.id), {
+            success: mine ? `${formatNear(sub.amount)} NEAR sent to your wallet.` : `Released. ${displayName(sub.creator)} was paid ${formatNear(sub.amount)} NEAR.`,
+          })
+        }
+      >
+        {mine ? `Receive ${formatNear(sub.amount)} NEAR` : "Release payout"}
       </ActionButton>,
     );
   }

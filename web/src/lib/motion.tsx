@@ -34,8 +34,10 @@ export const rise: Variants = {
 export const rowMotion = {
   layout: "position" as const,
   initial: { opacity: 0, y: -6 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease } },
+  // A new row waits for the rows below to slide out of its way, so their text never overlaps.
+  animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease, delay: 0.16 } },
   exit: { opacity: 0, x: 12, transition: { duration: 0.18, ease } },
+  transition: { layout: { duration: 0.22, ease } },
 };
 
 /**
