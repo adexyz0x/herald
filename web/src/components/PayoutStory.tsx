@@ -78,10 +78,10 @@ const STEPS: Step[] = [
   {
     tone: "dao",
     title: "Big asks go to a vote",
-    body: "A 25 NEAR translation is more than one reviewer can approve. Herald writes the DAO proposal, the council votes, and the treasury pays.",
+    body: "A 25 NEAR launch video is more than one reviewer can approve. Herald writes the DAO proposal, the council votes, and the treasury pays.",
     tier: "Trusted",
     points: 5,
-    deliverable: "Hausa translation",
+    deliverable: "Launch video",
     amount: "25",
     route: "Dao",
     stampMs: 1150,
@@ -116,7 +116,7 @@ const STEPS: Step[] = [
           [
             ["+1", "X thread", "Reviewer"],
             ["+1", "X thread", "Auto"],
-            ["+1", "Hausa translation", "Dao"],
+            ["+1", "Launch video", "Dao"],
           ] as const
         ).map(([delta, what, route], i) => (
           <motion.li

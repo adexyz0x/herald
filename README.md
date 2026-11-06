@@ -21,13 +21,13 @@ Built for the [NEAR HACKATHON](https://nearhackathon.com), Social Money track. W
 - **Pilot DAO:** [`herald-dao.sputnik-v2.testnet`](https://testnet.nearblocks.io/address/herald-dao.sputnik-v2.testnet), created through NEAR's Sputnik factory. Its council is Ade, who leads the project, plus two operator accounts the Herald team runs for the pilot (`oliver-herald`, `amelia-herald`). A proposal passes with 2 of 3 votes.
 - **Campaign:** "Herald launch week", launched by a DAO vote ([brief](https://herald-near.pages.dev/briefs/launch-week.html)).
 
-**Demo test, disclosed.** The activity on testnet so far is a demo test run by the Herald team with three demo tester accounts: `aminx-demo`, `lamz-demo` and `zhod-demo`. Their profiles say so, and their proof links open [demo posts](https://herald-near.pages.dev/demo/posts) that are marked as demos. It exercised all three routes with real transactions:
+**Demo test, disclosed.** The activity on testnet so far is a demo test run by the Herald team with three demo tester accounts: `aminx-demo`, `lamz-demo` and `zhod-demo`. Their profiles say so, and their proof links open [demo posts](https://herald-near.pages.dev/demo/posts) that are marked as demos. The first run exercised all three routes with real transactions:
 
 - Lamz: a thread approved by a reviewer and paid on the spot.
 - Aminx: two reviewed threads, which made Aminx Trusted, then a third thread that paid automatically after its public window.
 - Zhod: a custom request a reviewer sent to the DAO; two council votes passed it and the DAO paid it.
 
-Five payouts, 4 test NEAR, every step public on chain.
+Since then the same three accounts have been paid 16 times, 9.5 test NEAR in all: 7 approved by a reviewer, 5 automatic and 4 by DAO vote. Every step is public on chain.
 
 ## Try it locally in five minutes
 
