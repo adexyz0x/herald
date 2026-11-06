@@ -59,11 +59,22 @@ async fn setup(sputnik: &[u8]) -> anyhow::Result<World> {
     let root = worker.root_account()?;
 
     let app_wasm = near_workspaces::compile_project("./").await?;
-    let app = account(&root, "herald", 30).await?.deploy(&app_wasm).await?.into_result()?;
+    let app = account(&root, "herald", 30)
+        .await?
+        .deploy(&app_wasm)
+        .await?
+        .into_result()?;
     app.call("new").transact().await?.into_result()?;
 
-    let council = vec![account(&root, "ada", 30).await?, account(&root, "bayo", 30).await?];
-    let dao = account(&root, "ambassadors", 300).await?.deploy(sputnik).await?.into_result()?;
+    let council = vec![
+        account(&root, "ada", 30).await?,
+        account(&root, "bayo", 30).await?,
+    ];
+    let dao = account(&root, "ambassadors", 300)
+        .await?
+        .deploy(sputnik)
+        .await?
+        .into_result()?;
     dao.call("new")
         .args_json(json!({
             "config": { "name": "ambassadors", "purpose": "Ambassador program treasury", "metadata": "" },
@@ -146,7 +157,9 @@ impl World {
                 "gas": "150000000000000",
             }],
         }});
-        let status = self.dao_vote("Launch the Q4 ambassador campaign with 100 NEAR", &kind).await?;
+        let status = self
+            .dao_vote("Launch the Q4 ambassador campaign with 100 NEAR", &kind)
+            .await?;
         assert_eq!(status, "Approved", "the DAO proposal executed");
         Ok(())
     }
@@ -178,7 +191,10 @@ impl World {
     }
 
     async fn status(&self, id: u64) -> anyhow::Result<String> {
-        Ok(self.submission(id).await?["status"].as_str().unwrap().to_string())
+        Ok(self.submission(id).await?["status"]
+            .as_str()
+            .unwrap()
+            .to_string())
     }
 
     async fn balance(&self, account: &Account) -> anyhow::Result<u128> {
@@ -194,13 +210,25 @@ impl World {
             .json()?)
     }
 
-    async fn review(&self, reviewer: &Account, method: &str, args: Value) -> anyhow::Result<ExecutionFinalResult> {
-        Ok(reviewer.call(self.app.id(), method).args_json(args).max_gas().transact().await?)
+    async fn review(
+        &self,
+        reviewer: &Account,
+        method: &str,
+        args: Value,
+    ) -> anyhow::Result<ExecutionFinalResult> {
+        Ok(reviewer
+            .call(self.app.id(), method)
+            .args_json(args)
+            .max_gas()
+            .transact()
+            .await?)
     }
 
     /// Advances the sandbox clock past a submission's challenge window.
     async fn wait_out_challenge(&self, id: u64) -> anyhow::Result<()> {
-        let ends_ms = self.submission(id).await?["challenge_ends_at_ms"].as_u64().unwrap();
+        let ends_ms = self.submission(id).await?["challenge_ends_at_ms"]
+            .as_u64()
+            .unwrap();
         for _ in 0..20 {
             let now_ms = self.worker.view_block().await?.timestamp() / 1_000_000;
             if now_ms > ends_ms {
@@ -217,59 +245,112 @@ async fn full_program(sputnik: &[u8]) -> anyhow::Result<()> {
 
     // 1. The DAO launches and funds a campaign with one vote.
     w.launch_campaign().await?;
-    let campaign: Value = w.app.view("get_campaign").args_json(json!({ "campaign_id": 0 })).await?.json()?;
+    let campaign: Value = w
+        .app
+        .view("get_campaign")
+        .args_json(json!({ "campaign_id": 0 }))
+        .await?
+        .json()?;
     assert_eq!(campaign["dao"], w.dao.id().to_string());
     let budget: u128 = campaign["budget"].as_str().unwrap().parse()?;
-    assert!(budget > 99 * NEAR && budget < 100 * NEAR, "budget is the deposit minus storage");
+    assert!(
+        budget > 99 * NEAR && budget < 100 * NEAR,
+        "budget is the deposit minus storage"
+    );
 
     // 2. A newcomer's work needs one reviewer, and is paid the moment it's approved.
     let first = w.submit(Some(0), None).await?;
     assert_eq!(w.status(first).await?, "Pending");
     let before = w.balance(&w.cleo).await?;
-    let paid: bool = w.review(&w.rita, "approve", json!({ "submission_id": first })).await?.json()?;
+    let paid: bool = w
+        .review(&w.rita, "approve", json!({ "submission_id": first }))
+        .await?
+        .json()?;
     assert!(paid);
     assert_received(before, w.balance(&w.cleo).await?, 5 * NEAR);
 
     // 3. A second paid deliverable makes the creator Trusted with this DAO.
     let second = w.submit(Some(0), None).await?;
-    w.review(&w.ralph, "approve", json!({ "submission_id": second })).await?.into_result()?;
+    w.review(&w.ralph, "approve", json!({ "submission_id": second }))
+        .await?
+        .into_result()?;
     assert_eq!(w.tier().await?["tier"], "Trusted");
 
     // 4. Trusted work is approved automatically, but only after a public challenge window.
     let auto = w.submit(Some(0), None).await?;
     assert_eq!(w.status(auto).await?, "Challenge");
-    let early = w.keeper.call(w.app.id(), "finalize").args_json(json!({ "submission_id": auto })).max_gas().transact().await?;
-    assert!(early.is_failure(), "finalizing inside the window is refused");
+    let early = w
+        .keeper
+        .call(w.app.id(), "finalize")
+        .args_json(json!({ "submission_id": auto }))
+        .max_gas()
+        .transact()
+        .await?;
+    assert!(
+        early.is_failure(),
+        "finalizing inside the window is refused"
+    );
     w.wait_out_challenge(auto).await?;
     let before = w.balance(&w.cleo).await?;
-    let paid: bool = w.keeper.call(w.app.id(), "finalize").args_json(json!({ "submission_id": auto })).max_gas().transact().await?.json()?;
+    let paid: bool = w
+        .keeper
+        .call(w.app.id(), "finalize")
+        .args_json(json!({ "submission_id": auto }))
+        .max_gas()
+        .transact()
+        .await?
+        .json()?;
     assert!(paid);
     assert_received(before, w.balance(&w.cleo).await?, 5 * NEAR);
     assert_eq!(w.tier().await?["points"], 3);
 
     // 5. A reviewer can veto an automatic payout inside its window, which costs reputation.
     let vetoed = w.submit(Some(0), None).await?;
-    w.review(&w.ralph, "veto", json!({ "submission_id": vetoed, "reason": "Thread was deleted", "fraud": false }))
-        .await?
-        .into_result()?;
+    w.review(
+        &w.ralph,
+        "veto",
+        json!({ "submission_id": vetoed, "reason": "Thread was deleted", "fraud": false }),
+    )
+    .await?
+    .into_result()?;
     assert_eq!(w.status(vetoed).await?, "Vetoed");
-    assert_eq!(w.tier().await?["points"], 0, "3 points minus the 3-point slash");
+    assert_eq!(
+        w.tier().await?["points"],
+        0,
+        "3 points minus the 3-point slash"
+    );
 
     // 6. A large request is paid only after a DAO vote on the proposal Herald generates.
     let large = w.submit(None, Some(18)).await?;
-    w.review(&w.rita, "escalate", json!({ "submission_id": large })).await?.into_result()?;
+    w.review(&w.rita, "escalate", json!({ "submission_id": large }))
+        .await?
+        .into_result()?;
     assert_eq!(w.status(large).await?, "AwaitingDao");
-    let not_dao = w.review(&w.rita, "dao_approve", json!({ "submission_id": large })).await?;
+    let not_dao = w
+        .review(&w.rita, "dao_approve", json!({ "submission_id": large }))
+        .await?;
     assert!(not_dao.is_failure(), "a reviewer can't use the DAO's route");
-    let proposal: Value = w.app.view("get_dao_proposal").args_json(json!({ "submission_id": large })).await?.json()?;
+    let proposal: Value = w
+        .app
+        .view("get_dao_proposal")
+        .args_json(json!({ "submission_id": large }))
+        .await?
+        .json()?;
     let before = w.balance(&w.cleo).await?;
-    let status = w.dao_vote(proposal["description"].as_str().unwrap(), &proposal["kind"]).await?;
+    let status = w
+        .dao_vote(proposal["description"].as_str().unwrap(), &proposal["kind"])
+        .await?;
     assert_eq!(status, "Approved");
     assert_eq!(w.status(large).await?, "Paid");
     assert_received(before, w.balance(&w.cleo).await?, 18 * NEAR);
 
     // 7. Closing the campaign returns every unreserved NEAR to the treasury.
-    let campaign: Value = w.app.view("get_campaign").args_json(json!({ "campaign_id": 0 })).await?.json()?;
+    let campaign: Value = w
+        .app
+        .view("get_campaign")
+        .args_json(json!({ "campaign_id": 0 }))
+        .await?
+        .json()?;
     let refund: u128 = campaign["available"].as_str().unwrap().parse()?;
     let before = w.balance(w.dao.as_account()).await?;
     let kind = json!({ "FunctionCall": {
@@ -281,8 +362,16 @@ async fn full_program(sputnik: &[u8]) -> anyhow::Result<()> {
             "gas": "50000000000000",
         }],
     }});
-    assert_eq!(w.dao_vote("Close the Q4 campaign", &kind).await?, "Approved");
-    let campaign: Value = w.app.view("get_campaign").args_json(json!({ "campaign_id": 0 })).await?.json()?;
+    assert_eq!(
+        w.dao_vote("Close the Q4 campaign", &kind).await?,
+        "Approved"
+    );
+    let campaign: Value = w
+        .app
+        .view("get_campaign")
+        .args_json(json!({ "campaign_id": 0 }))
+        .await?
+        .json()?;
     assert_eq!(campaign["status"], "Closed");
     let gained = w.balance(w.dao.as_account()).await? as i128 - before as i128;
     assert!(

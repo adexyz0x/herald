@@ -23,7 +23,9 @@ pub(crate) fn format_near(yocto: u128) -> String {
     if frac == 0 {
         whole.to_string()
     } else {
-        format!("{whole}.{frac:04}").trim_end_matches('0').to_string()
+        format!("{whole}.{frac:04}")
+            .trim_end_matches('0')
+            .to_string()
     }
 }
 
@@ -52,7 +54,11 @@ impl Contract {
         from_index: Option<u64>,
         limit: Option<u64>,
     ) -> Vec<Submission> {
-        let ids = self.campaign_submissions.get(&campaign_id).cloned().unwrap_or_default();
+        let ids = self
+            .campaign_submissions
+            .get(&campaign_id)
+            .cloned()
+            .unwrap_or_default();
         page(ids.len() as u64, from_index, limit)
             .filter_map(|i| self.get_submission(ids[i as usize]))
             .collect()
@@ -64,7 +70,11 @@ impl Contract {
         from_index: Option<u64>,
         limit: Option<u64>,
     ) -> Vec<Submission> {
-        let ids = self.creator_submissions.get(&account_id).cloned().unwrap_or_default();
+        let ids = self
+            .creator_submissions
+            .get(&account_id)
+            .cloned()
+            .unwrap_or_default();
         page(ids.len() as u64, from_index, limit)
             .filter_map(|i| self.get_submission(ids[i as usize]))
             .collect()
@@ -114,7 +124,9 @@ impl Contract {
             campaign.title,
             sub.proof_url
         );
-        let args = json!({ "submission_id": submission_id }).to_string().into_bytes();
+        let args = json!({ "submission_id": submission_id })
+            .to_string()
+            .into_bytes();
         Some(SputnikProposalInput {
             description,
             kind: SputnikProposalKind::FunctionCall {

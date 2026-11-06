@@ -81,7 +81,10 @@ impl Contract {
     pub fn top_up(&mut self, campaign_id: u64) {
         let mut campaign = self.campaign(campaign_id);
         Self::assert_dao(&campaign);
-        require!(campaign.status == CampaignStatus::Active, "Campaign is closed");
+        require!(
+            campaign.status == CampaignStatus::Active,
+            "Campaign is closed"
+        );
         let amount = env::attached_deposit().as_yoctonear();
         require!(amount > 0, "Attach the amount to add");
         campaign.budget = U128(campaign.budget.0 + amount);
@@ -105,7 +108,10 @@ impl Contract {
     ) {
         let mut campaign = self.campaign(campaign_id);
         Self::assert_dao(&campaign);
-        require!(campaign.status == CampaignStatus::Active, "Campaign is closed");
+        require!(
+            campaign.status == CampaignStatus::Active,
+            "Campaign is closed"
+        );
         let initial_usage = env::storage_usage();
 
         if let Some(list) = reviewers {
@@ -144,7 +150,10 @@ impl Contract {
     pub fn close_campaign(&mut self, campaign_id: u64) -> Promise {
         let mut campaign = self.campaign(campaign_id);
         Self::assert_dao(&campaign);
-        require!(campaign.status == CampaignStatus::Active, "Campaign is already closed");
+        require!(
+            campaign.status == CampaignStatus::Active,
+            "Campaign is already closed"
+        );
         let refund = campaign.available();
         campaign.budget = U128(campaign.reserved.0 + campaign.paid.0);
         campaign.status = CampaignStatus::Closed;

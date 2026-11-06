@@ -29,8 +29,14 @@ impl Contract {
         let initial_usage = env::storage_usage();
         let creator = env::predecessor_account_id();
         let mut campaign = self.campaign(campaign_id);
-        require!(campaign.status == CampaignStatus::Active, "Campaign is closed");
-        require!(creator != campaign.dao, "The DAO can't submit to its own campaign");
+        require!(
+            campaign.status == CampaignStatus::Active,
+            "Campaign is closed"
+        );
+        require!(
+            creator != campaign.dao,
+            "The DAO can't submit to its own campaign"
+        );
         require!(
             !campaign.reviewers.contains(&creator),
             "Reviewers can't submit to a campaign they review"
@@ -59,7 +65,10 @@ impl Contract {
         );
 
         let rep = self.reputation_of(&campaign.dao, &creator);
-        require!(!rep.banned, "This account is banned from this DAO's campaigns");
+        require!(
+            !rep.banned,
+            "This account is banned from this DAO's campaigns"
+        );
         let open_key = (campaign_id, creator.clone());
         let open = self.open_counts.get(&open_key).copied().unwrap_or(0);
         require!(
@@ -106,10 +115,18 @@ impl Contract {
         self.save_submission(submission.clone());
         self.save_campaign(campaign);
 
-        let mut ids = self.campaign_submissions.get(&campaign_id).cloned().unwrap_or_default();
+        let mut ids = self
+            .campaign_submissions
+            .get(&campaign_id)
+            .cloned()
+            .unwrap_or_default();
         ids.push(id);
         self.campaign_submissions.insert(campaign_id, ids);
-        let mut mine = self.creator_submissions.get(&creator).cloned().unwrap_or_default();
+        let mut mine = self
+            .creator_submissions
+            .get(&creator)
+            .cloned()
+            .unwrap_or_default();
         mine.push(id);
         self.creator_submissions.insert(creator.clone(), mine);
         self.open_counts.insert(open_key, open + 1);
@@ -145,7 +162,10 @@ impl Contract {
             sub.status == SubmissionStatus::Pending,
             "Only pending submissions can be approved by a reviewer"
         );
-        require!(campaign.status == CampaignStatus::Active, "Campaign is closed");
+        require!(
+            campaign.status == CampaignStatus::Active,
+            "Campaign is closed"
+        );
         require!(
             sub.amount.0 <= campaign.rules.reviewer_limit.0,
             "Above the reviewer limit: this needs a DAO vote"
@@ -316,7 +336,10 @@ impl Contract {
             "Only automatic payouts can be finalized"
         );
         let ends = sub.challenge_ends_at_ms.unwrap_or(u64::MAX);
-        require!(Self::now_ms() >= ends, "The challenge window hasn't ended yet");
+        require!(
+            Self::now_ms() >= ends,
+            "The challenge window hasn't ended yet"
+        );
         sub.decided_at_ms = Some(Self::now_ms());
         self.release_open_slot(sub.campaign_id, &sub.creator);
         emit(

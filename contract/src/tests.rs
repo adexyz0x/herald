@@ -38,7 +38,9 @@ struct Env {
 
 impl Env {
     fn new() -> Self {
-        Self { now_ms: 1_800_000_000_000 }
+        Self {
+            now_ms: 1_800_000_000_000,
+        }
     }
 
     fn call(&self, who: &AccountId, deposit: u128) {
@@ -83,8 +85,14 @@ fn rules() -> Rules {
 
 fn rate_card() -> Vec<Deliverable> {
     vec![
-        Deliverable { name: "X thread".into(), amount: U128(5 * NEAR) },
-        Deliverable { name: "Short video".into(), amount: U128(15 * NEAR) },
+        Deliverable {
+            name: "X thread".into(),
+            amount: U128(5 * NEAR),
+        },
+        Deliverable {
+            name: "Short video".into(),
+            amount: U128(15 * NEAR),
+        },
     ]
 }
 
@@ -110,17 +118,33 @@ fn launch(c: &mut Contract, env: &Env, dao: &AccountId, budget_near: u128) -> u6
 
 fn submit_line(c: &mut Contract, env: &Env, who: &AccountId, campaign: u64, line: u32) -> u64 {
     env.call(who, NEAR / 10);
-    c.submit(campaign, Some(line), None, "https://x.com/cleo/status/1".into(), None)
+    c.submit(
+        campaign,
+        Some(line),
+        None,
+        "https://x.com/cleo/status/1".into(),
+        None,
+    )
 }
 
 fn submit_custom(c: &mut Contract, env: &Env, who: &AccountId, campaign: u64, near: u128) -> u64 {
     env.call(who, NEAR / 10);
-    c.submit(campaign, None, Some(U128(near * NEAR)), "https://x.com/cleo/status/2".into(), None)
+    c.submit(
+        campaign,
+        None,
+        Some(U128(near * NEAR)),
+        "https://x.com/cleo/status/2".into(),
+        None,
+    )
 }
 
 /// Runs the payout callback as if the transfer succeeded or failed.
 fn settle(c: &mut Contract, env: &Env, submission: u64, ok: bool) -> bool {
-    let result = if ok { PromiseResult::Successful(vec![]) } else { PromiseResult::Failed };
+    let result = if ok {
+        PromiseResult::Successful(vec![])
+    } else {
+        PromiseResult::Failed
+    };
     env.call_with(&contract_id(), 0, vec![result]);
     c.on_payout(submission)
 }
@@ -149,8 +173,14 @@ fn campaign_is_funded_and_governed_by_its_dao() {
     let view = campaign(&c, id);
     assert_eq!(view.campaign.dao, dao());
     assert_eq!(view.campaign.status, CampaignStatus::Active);
-    assert!(view.campaign.budget.0 < 200 * NEAR, "storage is taken out of the budget");
-    assert!(view.campaign.budget.0 > 199 * NEAR, "storage costs a small amount");
+    assert!(
+        view.campaign.budget.0 < 200 * NEAR,
+        "storage is taken out of the budget"
+    );
+    assert!(
+        view.campaign.budget.0 > 199 * NEAR,
+        "storage costs a small amount"
+    );
     assert_eq!(view.available, view.campaign.budget);
 }
 
@@ -179,7 +209,13 @@ fn rules_must_be_consistent() {
     let mut bad = rules();
     bad.auto_limit_core = U128(500 * NEAR);
     env.call(&dao(), 10 * NEAR);
-    c.create_campaign("Bad".into(), "https://example.org".into(), rate_card(), vec![reviewer()], Some(bad));
+    c.create_campaign(
+        "Bad".into(),
+        "https://example.org".into(),
+        rate_card(),
+        vec![reviewer()],
+        Some(bad),
+    );
 }
 
 #[test]
@@ -190,7 +226,11 @@ fn newcomers_always_need_a_reviewer() {
     assert_eq!(s.status, SubmissionStatus::Pending);
     assert_eq!(s.route, Route::Reviewer);
     assert_eq!(s.tier_at_submit, Tier::Newcomer);
-    assert_eq!(campaign(&c, id).campaign.reserved.0, 0, "nothing reserved before a decision");
+    assert_eq!(
+        campaign(&c, id).campaign.reserved.0,
+        0,
+        "nothing reserved before a decision"
+    );
 }
 
 #[test]
@@ -230,8 +270,15 @@ fn failed_transfer_rolls_back_and_can_be_claimed() {
     assert!(!settle(&mut c, &env, sub, false));
 
     let view = campaign(&c, id);
-    assert_eq!(view.campaign.paid.0, 0, "failed transfer is not counted as paid");
-    assert_eq!(view.campaign.reserved.0, 5 * NEAR, "funds stay reserved for the retry");
+    assert_eq!(
+        view.campaign.paid.0, 0,
+        "failed transfer is not counted as paid"
+    );
+    assert_eq!(
+        view.campaign.reserved.0,
+        5 * NEAR,
+        "funds stay reserved for the retry"
+    );
     assert_eq!(status(&c, sub), SubmissionStatus::Approved);
     assert_eq!(c.get_reputation(dao(), creator()).points, 0);
 
@@ -252,7 +299,11 @@ fn trusted_creators_are_paid_automatically_after_the_window() {
     let s = c.get_submission(sub).unwrap();
     assert_eq!(s.status, SubmissionStatus::Challenge);
     assert_eq!(s.route, Route::Auto);
-    assert_eq!(campaign(&c, id).campaign.reserved.0, 5 * NEAR, "auto payouts reserve funds");
+    assert_eq!(
+        campaign(&c, id).campaign.reserved.0,
+        5 * NEAR,
+        "auto payouts reserve funds"
+    );
 
     env.advance_sec(181);
     env.call(&acc("anyone.near"), 0);
@@ -298,7 +349,11 @@ fn veto_slashes_reputation_and_fraud_bans() {
     env.call(&reviewer2(), 0);
     c.veto(sub, "Post was deleted after an hour".into(), true);
     assert_eq!(status(&c, sub), SubmissionStatus::Vetoed);
-    assert_eq!(campaign(&c, id).campaign.reserved.0, 0, "veto releases the reservation");
+    assert_eq!(
+        campaign(&c, id).campaign.reserved.0,
+        0,
+        "veto releases the reservation"
+    );
     let rep = c.get_reputation(dao(), creator());
     assert_eq!(rep.points, 0, "2 points minus 3, floored at 0");
     assert_eq!(rep.slashed_submissions, vec![sub]);
@@ -370,11 +425,17 @@ fn escalated_work_is_paid_by_a_dao_vote() {
     c.escalate(sub);
     assert_eq!(status(&c, sub), SubmissionStatus::AwaitingDao);
 
-    let proposal = c.get_dao_proposal(sub).expect("a proposal is available while undecided");
-    let SputnikProposalKind::FunctionCall { receiver_id, actions } = proposal.kind;
+    let proposal = c
+        .get_dao_proposal(sub)
+        .expect("a proposal is available while undecided");
+    let SputnikProposalKind::FunctionCall {
+        receiver_id,
+        actions,
+    } = proposal.kind;
     assert_eq!(receiver_id, contract_id());
     assert_eq!(actions[0].method_name, "dao_approve");
-    let args: near_sdk::serde_json::Value = near_sdk::serde_json::from_slice(&actions[0].args.0).unwrap();
+    let args: near_sdk::serde_json::Value =
+        near_sdk::serde_json::from_slice(&actions[0].args.0).unwrap();
     assert_eq!(args["submission_id"], sub);
     assert!(proposal.description.contains("pay 15 NEAR to cleo.near"));
 
@@ -382,7 +443,10 @@ fn escalated_work_is_paid_by_a_dao_vote() {
     let _ = c.dao_approve(sub);
     assert!(settle(&mut c, &env, sub, true));
     assert_eq!(status(&c, sub), SubmissionStatus::Paid);
-    assert!(c.get_dao_proposal(sub).is_none(), "no proposal once decided");
+    assert!(
+        c.get_dao_proposal(sub).is_none(),
+        "no proposal once decided"
+    );
 }
 
 #[test]
@@ -430,7 +494,10 @@ fn closing_refunds_the_dao_and_keeps_scheduled_payouts() {
     let _ = c.close_campaign(id);
     let after = campaign(&c, id);
     assert_eq!(after.campaign.status, CampaignStatus::Closed);
-    assert_eq!(after.available.0, 0, "everything unreserved went back to the DAO");
+    assert_eq!(
+        after.available.0, 0,
+        "everything unreserved went back to the DAO"
+    );
     assert_eq!(after.campaign.reserved, before.campaign.reserved);
 
     env.advance_sec(181);
@@ -463,7 +530,10 @@ fn views_page_through_history() {
     assert_eq!(second_page.len(), 1);
     assert_eq!(c.get_creator_submissions(creator(), None, None).len(), 1);
     let stats = c.get_stats();
-    assert_eq!((stats.campaigns, stats.submissions, stats.creators), (1, 2, 2));
+    assert_eq!(
+        (stats.campaigns, stats.submissions, stats.creators),
+        (1, 2, 2)
+    );
 }
 
 #[test]

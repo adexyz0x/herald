@@ -8,7 +8,9 @@
 //! is the campaign's DAO or one of the reviewers the DAO appointed.
 
 use near_sdk::store::{LookupMap, LookupSet};
-use near_sdk::{env, near, require, AccountId, BorshStorageKey, NearToken, PanicOnDefault, Promise};
+use near_sdk::{
+    env, near, require, AccountId, BorshStorageKey, NearToken, PanicOnDefault, Promise,
+};
 
 mod campaign;
 mod events;
@@ -109,7 +111,12 @@ impl Contract {
             .unwrap_or_default()
     }
 
-    pub(crate) fn save_reputation(&mut self, dao: &AccountId, creator: &AccountId, rep: Reputation) {
+    pub(crate) fn save_reputation(
+        &mut self,
+        dao: &AccountId,
+        creator: &AccountId,
+        rep: Reputation,
+    ) {
         self.reputation.insert((dao.clone(), creator.clone()), rep);
     }
 
@@ -144,7 +151,10 @@ impl Contract {
             campaign.reviewers.contains(&caller),
             "Only a reviewer of this campaign can do this"
         );
-        require!(caller != submission.creator, "Reviewers can't decide on their own work");
+        require!(
+            caller != submission.creator,
+            "Reviewers can't decide on their own work"
+        );
         caller
     }
 

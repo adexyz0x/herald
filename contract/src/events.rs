@@ -1,7 +1,7 @@
 //! NEP-297 events. Every state change is logged so indexers and the app can rebuild history.
 
-use near_sdk::serde_json::{json, Value};
 use near_sdk::env;
+use near_sdk::serde_json::{json, Value};
 
 pub const STANDARD: &str = "herald";
 pub const VERSION: &str = "1.0.0";

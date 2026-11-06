@@ -41,7 +41,12 @@ struct Demo {
 }
 
 impl Demo {
-    async fn propose(&self, proposer: &Account, description: &str, kind: &Value) -> anyhow::Result<u64> {
+    async fn propose(
+        &self,
+        proposer: &Account,
+        description: &str,
+        kind: &Value,
+    ) -> anyhow::Result<u64> {
         let policy: Value = self.dao.view("get_policy").await?.json()?;
         let bond: u128 = policy["proposal_bond"].as_str().unwrap().parse()?;
         Ok(proposer
@@ -129,25 +134,37 @@ impl Demo {
     }
 
     async fn approve(&self, reviewer: &Account, id: u64) -> anyhow::Result<()> {
-        self.act(reviewer, "approve", json!({ "submission_id": id })).await
+        self.act(reviewer, "approve", json!({ "submission_id": id }))
+            .await
     }
 
     /// Gets a submission paid by whichever route it landed on: a reviewer approves pending work,
     /// and automatic payouts are finalized once their challenge window has passed.
     async fn pay(&self, reviewer: &Account, id: u64) -> anyhow::Result<()> {
-        let sub: Value = self.herald.view("get_submission").args_json(json!({ "submission_id": id })).await?.json()?;
+        let sub: Value = self
+            .herald
+            .view("get_submission")
+            .args_json(json!({ "submission_id": id }))
+            .await?
+            .json()?;
         match sub["status"].as_str().unwrap_or_default() {
             "Pending" => self.approve(reviewer, id).await,
             "Challenge" => {
                 self.wait_out_challenge(id).await?;
-                self.act(reviewer, "finalize", json!({ "submission_id": id })).await
+                self.act(reviewer, "finalize", json!({ "submission_id": id }))
+                    .await
             }
             other => anyhow::bail!("submission {id} is {other}, not payable"),
         }
     }
 
     async fn wait_out_challenge(&self, id: u64) -> anyhow::Result<()> {
-        let sub: Value = self.herald.view("get_submission").args_json(json!({ "submission_id": id })).await?.json()?;
+        let sub: Value = self
+            .herald
+            .view("get_submission")
+            .args_json(json!({ "submission_id": id }))
+            .await?
+            .json()?;
         let ends_ms = sub["challenge_ends_at_ms"].as_u64().unwrap();
         while self.worker.view_block().await?.timestamp() / 1_000_000 <= ends_ms {
             self.worker.fast_forward(200).await?;
@@ -156,7 +173,14 @@ impl Demo {
     }
 }
 
-fn rules(trusted: u32, core: u32, auto_trusted: f64, auto_core: f64, reviewer: f64, challenge_sec: u32) -> Value {
+fn rules(
+    trusted: u32,
+    core: u32,
+    auto_trusted: f64,
+    auto_core: f64,
+    reviewer: f64,
+    challenge_sec: u32,
+) -> Value {
     json!({
         "trusted_after": trusted,
         "core_after": core,
@@ -188,13 +212,21 @@ async fn main() -> anyhow::Result<()> {
 
     println!("Deploying Herald and a Sputnik DAO...");
     let wasm = near_workspaces::compile_project(env!("CARGO_MANIFEST_DIR")).await?;
-    let herald = make("herald", 40).await?.deploy(&wasm).await?.into_result()?;
+    let herald = make("herald", 40)
+        .await?
+        .deploy(&wasm)
+        .await?
+        .into_result()?;
     herald.call("new").transact().await?.into_result()?;
 
     let ade = make("ade", 50).await?;
     let oliver = make("oliver", 50).await?;
     let amelia = make("amelia", 50).await?;
-    let dao = make("beacon", 600).await?.deploy(SPUTNIK).await?.into_result()?;
+    let dao = make("beacon", 600)
+        .await?
+        .deploy(SPUTNIK)
+        .await?
+        .into_result()?;
     dao.call("new")
         .args_json(json!({
             "config": { "name": "beacon", "purpose": "Beacon Collective ambassador treasury", "metadata": "" },
@@ -213,7 +245,12 @@ async fn main() -> anyhow::Result<()> {
     let lina = make("lina", 20).await?;
     let sol = make("sol", 20).await?;
 
-    let d = Demo { worker, herald, dao, council: vec![ade.clone(), oliver.clone(), amelia.clone()] };
+    let d = Demo {
+        worker,
+        herald,
+        dao,
+        council: vec![ade.clone(), oliver.clone(), amelia.clone()],
+    };
 
     println!("Launching campaigns through DAO votes...");
     d.launch(
@@ -265,68 +302,241 @@ async fn main() -> anyhow::Result<()> {
     println!("Playing out the program...");
     let x = "https://x.com";
     // Femi has a long record with Beacon: five paid deliverables makes Core.
-    for (line, reviewer, post) in [(0, &kemi, "1"), (1, &marco, "2"), (2, &kemi, "3"), (0, &marco, "4"), (3, &kemi, "5")] {
-        let id = d.submit(&femi, 0, Some(line), None, &format!("{x}/femi_creates/status/{post}"), "").await?;
+    for (line, reviewer, post) in [
+        (0, &kemi, "1"),
+        (1, &marco, "2"),
+        (2, &kemi, "3"),
+        (0, &marco, "4"),
+        (3, &kemi, "5"),
+    ] {
+        let id = d
+            .submit(
+                &femi,
+                0,
+                Some(line),
+                None,
+                &format!("{x}/femi_creates/status/{post}"),
+                "",
+            )
+            .await?;
         d.pay(reviewer, id).await?;
     }
     // Cleo earns Trusted with two reviewed payouts, then gets her first automatic payout.
     for (line, post) in [(0, "11"), (3, "12")] {
-        let id = d.submit(&cleo, 0, Some(line), None, &format!("{x}/cleo_onchain/status/{post}"), "").await?;
+        let id = d
+            .submit(
+                &cleo,
+                0,
+                Some(line),
+                None,
+                &format!("{x}/cleo_onchain/status/{post}"),
+                "",
+            )
+            .await?;
         d.pay(&kemi, id).await?;
     }
     let auto = d
-        .submit(&cleo, 0, Some(0), None, &format!("{x}/cleo_onchain/status/13"), "Thread on how Beacon routes payouts")
+        .submit(
+            &cleo,
+            0,
+            Some(0),
+            None,
+            &format!("{x}/cleo_onchain/status/13"),
+            "Thread on how Beacon routes payouts",
+        )
         .await?;
     d.wait_out_challenge(auto).await?;
-    d.act(&oliver, "finalize", json!({ "submission_id": auto })).await?;
+    d.act(&oliver, "finalize", json!({ "submission_id": auto }))
+        .await?;
     // Lina reaches Trusted, then a deleted thread gets vetoed inside its window.
     for post in ["21", "22"] {
-        let id = d.submit(&lina, 0, Some(0), None, &format!("{x}/lina_builds/status/{post}"), "").await?;
+        let id = d
+            .submit(
+                &lina,
+                0,
+                Some(0),
+                None,
+                &format!("{x}/lina_builds/status/{post}"),
+                "",
+            )
+            .await?;
         d.pay(&marco, id).await?;
     }
-    let vetoed = d.submit(&lina, 0, Some(0), None, &format!("{x}/lina_builds/status/23"), "").await?;
+    let vetoed = d
+        .submit(
+            &lina,
+            0,
+            Some(0),
+            None,
+            &format!("{x}/lina_builds/status/23"),
+            "",
+        )
+        .await?;
     d.act(&marco, "veto", json!({ "submission_id": vetoed, "reason": "Thread was deleted an hour after posting", "fraud": false })).await?;
     // Dami is new: one off-brief post rejected.
-    let rejected = d.submit(&dami, 0, Some(0), None, &format!("{x}/dami_ng/status/31"), "").await?;
+    let rejected = d
+        .submit(
+            &dami,
+            0,
+            Some(0),
+            None,
+            &format!("{x}/dami_ng/status/31"),
+            "",
+        )
+        .await?;
     d.act(&kemi, "reject", json!({ "submission_id": rejected, "reason": "Off-brief: the thread never mentions Beacon" })).await?;
     // Video sprint: one paid video.
-    let video = d.submit(&femi, 1, Some(0), None, "https://youtube.com/shorts/beacon-demo", "60-second walkthrough").await?;
+    let video = d
+        .submit(
+            &femi,
+            1,
+            Some(0),
+            None,
+            "https://youtube.com/shorts/beacon-demo",
+            "60-second walkthrough",
+        )
+        .await?;
     d.pay(&marco, video).await?;
     // Launch week: two paid threads, then the DAO closes it and takes back the rest.
     for (creator, post) in [(&cleo, "41"), (&femi, "42")] {
-        let id = d.submit(creator, 2, Some(0), None, &format!("{x}/launch/status/{post}"), "").await?;
+        let id = d
+            .submit(
+                creator,
+                2,
+                Some(0),
+                None,
+                &format!("{x}/launch/status/{post}"),
+                "",
+            )
+            .await?;
         d.pay(&kemi, id).await?;
     }
-    let close = d.call_kind("close_campaign", json!({ "campaign_id": 2 }), "0".into(), 50);
-    d.pass("Close launch week and return the unspent budget", &close).await?;
+    let close = d.call_kind(
+        "close_campaign",
+        json!({ "campaign_id": 2 }),
+        "0".into(),
+        50,
+    );
+    d.pass("Close launch week and return the unspent budget", &close)
+        .await?;
 
     println!("Leaving live items open for you...");
     // Waiting for a reviewer: Dami's second try.
-    d.submit(&dami, 0, Some(0), None, &format!("{x}/dami_ng/status/32"), "Thread on Beacon's payout routes").await?;
+    d.submit(
+        &dami,
+        0,
+        Some(0),
+        None,
+        &format!("{x}/dami_ng/status/32"),
+        "Thread on Beacon's payout routes",
+    )
+    .await?;
     // Waiting for a reviewer: Core creator above the automatic limit.
-    d.submit(&femi, 0, Some(4), None, "https://lu.ma/beacon-lagos-meetup", "Lagos meetup, 40 attendees").await?;
+    d.submit(
+        &femi,
+        0,
+        Some(4),
+        None,
+        "https://lu.ma/beacon-lagos-meetup",
+        "Lagos meetup, 40 attendees",
+    )
+    .await?;
     // A large custom request (above the reviewer limit) with a DAO vote one ballot from passing.
     let large = d
-        .submit(&sol, 0, None, Some(25.0), "https://example.org/sol/beacon-hausa-guide", "Full Hausa translation of the docs")
+        .submit(
+            &sol,
+            0,
+            None,
+            Some(25.0),
+            "https://example.org/sol/beacon-hausa-guide",
+            "Full Hausa translation of the docs",
+        )
         .await?;
-    let proposal: Value = d.herald.view("get_dao_proposal").args_json(json!({ "submission_id": large })).await?.json()?;
-    let pid = d.propose(&ade, proposal["description"].as_str().unwrap(), &proposal["kind"]).await?;
+    let proposal: Value = d
+        .herald
+        .view("get_dao_proposal")
+        .args_json(json!({ "submission_id": large }))
+        .await?
+        .json()?;
+    let pid = d
+        .propose(
+            &ade,
+            proposal["description"].as_str().unwrap(),
+            &proposal["kind"],
+        )
+        .await?;
     d.vote(&ade, pid, &proposal["kind"]).await?;
     // Live challenge windows: automatic payouts that can still be vetoed.
-    d.submit(&cleo, 0, Some(0), None, &format!("{x}/cleo_onchain/status/14"), "Thread on Beacon's Q4 roadmap").await?;
-    d.submit(&femi, 0, Some(2), None, "https://x.com/i/spaces/beacon-q4", "Co-hosted the Q4 community Space").await?;
+    d.submit(
+        &cleo,
+        0,
+        Some(0),
+        None,
+        &format!("{x}/cleo_onchain/status/14"),
+        "Thread on Beacon's Q4 roadmap",
+    )
+    .await?;
+    d.submit(
+        &femi,
+        0,
+        Some(2),
+        None,
+        "https://x.com/i/spaces/beacon-q4",
+        "Co-hosted the Q4 community Space",
+    )
+    .await?;
 
     let personas = vec![
-        Persona { account: ade, name: "Ade", role: "council" },
-        Persona { account: oliver, name: "Oliver", role: "council" },
-        Persona { account: amelia, name: "Amelia", role: "council" },
-        Persona { account: kemi, name: "Kemi", role: "reviewer" },
-        Persona { account: marco, name: "Marco", role: "reviewer" },
-        Persona { account: cleo, name: "Cleo", role: "creator" },
-        Persona { account: femi, name: "Femi", role: "creator" },
-        Persona { account: dami, name: "Dami", role: "creator" },
-        Persona { account: lina, name: "Lina", role: "creator" },
-        Persona { account: sol, name: "Sol", role: "creator" },
+        Persona {
+            account: ade,
+            name: "Ade",
+            role: "council",
+        },
+        Persona {
+            account: oliver,
+            name: "Oliver",
+            role: "council",
+        },
+        Persona {
+            account: amelia,
+            name: "Amelia",
+            role: "council",
+        },
+        Persona {
+            account: kemi,
+            name: "Kemi",
+            role: "reviewer",
+        },
+        Persona {
+            account: marco,
+            name: "Marco",
+            role: "reviewer",
+        },
+        Persona {
+            account: cleo,
+            name: "Cleo",
+            role: "creator",
+        },
+        Persona {
+            account: femi,
+            name: "Femi",
+            role: "creator",
+        },
+        Persona {
+            account: dami,
+            name: "Dami",
+            role: "creator",
+        },
+        Persona {
+            account: lina,
+            name: "Lina",
+            role: "creator",
+        },
+        Persona {
+            account: sol,
+            name: "Sol",
+            role: "creator",
+        },
     ];
     let config = json!({
         "network": "local",
@@ -341,12 +551,23 @@ async fn main() -> anyhow::Result<()> {
             "secretKey": p.account.secret_key().to_string(),
         })).collect::<Vec<_>>(),
     });
-    let out: PathBuf = [env!("CARGO_MANIFEST_DIR"), "..", "web", "public", "local-demo.json"].iter().collect();
+    let out: PathBuf = [
+        env!("CARGO_MANIFEST_DIR"),
+        "..",
+        "web",
+        "public",
+        "local-demo.json",
+    ]
+    .iter()
+    .collect();
     std::fs::create_dir_all(out.parent().unwrap())?;
     std::fs::write(&out, serde_json::to_string_pretty(&config)?)?;
 
     let stats: Value = d.herald.view("get_stats").await?.json()?;
-    println!("\nHerald is running on a private chain at {}", d.worker.rpc_addr());
+    println!(
+        "\nHerald is running on a private chain at {}",
+        d.worker.rpc_addr()
+    );
     println!("Seeded: {stats}");
     println!("Wrote {}", out.display());
     println!("\nIn another terminal:  cd web && npm install && npm run dev");

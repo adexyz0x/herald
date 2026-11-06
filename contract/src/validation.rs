@@ -16,23 +16,34 @@ pub const MAX_CHALLENGE_SEC: u32 = 30 * 24 * 60 * 60;
 
 pub fn title(value: &str) {
     let len = value.trim().chars().count();
-    require!(len > 0 && len <= MAX_TITLE_LEN, "Title must be 1-80 characters");
+    require!(
+        len > 0 && len <= MAX_TITLE_LEN,
+        "Title must be 1-80 characters"
+    );
 }
 
 pub fn url(value: &str, field: &str) {
     require!(
-        value.starts_with("https://") && value.len() <= MAX_URL_LEN && !value.contains(char::is_whitespace),
+        value.starts_with("https://")
+            && value.len() <= MAX_URL_LEN
+            && !value.contains(char::is_whitespace),
         format!("{field} must be an https:// link of at most 300 characters")
     );
 }
 
 pub fn note(value: &str) {
-    require!(value.chars().count() <= MAX_NOTE_LEN, "Note must be at most 280 characters");
+    require!(
+        value.chars().count() <= MAX_NOTE_LEN,
+        "Note must be at most 280 characters"
+    );
 }
 
 pub fn reason(value: &str) {
     let len = value.trim().chars().count();
-    require!(len > 0 && len <= MAX_REASON_LEN, "Give a reason of 1-280 characters");
+    require!(
+        len > 0 && len <= MAX_REASON_LEN,
+        "Give a reason of 1-280 characters"
+    );
 }
 
 pub fn rate_card(card: &[Deliverable]) {
@@ -42,7 +53,10 @@ pub fn rate_card(card: &[Deliverable]) {
     );
     for line in card {
         let len = line.name.trim().chars().count();
-        require!(len > 0 && len <= MAX_DELIVERABLE_NAME_LEN, "Deliverable names must be 1-40 characters");
+        require!(
+            len > 0 && len <= MAX_DELIVERABLE_NAME_LEN,
+            "Deliverable names must be 1-40 characters"
+        );
         require!(line.amount.0 > 0, "Deliverable amounts must be above zero");
     }
 }
@@ -53,14 +67,20 @@ pub fn reviewers(list: &[AccountId], dao: &AccountId) {
         "A campaign needs 1-10 reviewers"
     );
     for (i, account) in list.iter().enumerate() {
-        require!(account != dao, "The DAO acts through proposals, not as a reviewer");
+        require!(
+            account != dao,
+            "The DAO acts through proposals, not as a reviewer"
+        );
         require!(!list[..i].contains(account), "Reviewers must be unique");
     }
 }
 
 pub fn rules(rules: &Rules) {
     require!(rules.trusted_after >= 1, "trusted_after must be at least 1");
-    require!(rules.core_after > rules.trusted_after, "core_after must be above trusted_after");
+    require!(
+        rules.core_after > rules.trusted_after,
+        "core_after must be above trusted_after"
+    );
     require!(
         rules.auto_limit_trusted.0 <= rules.auto_limit_core.0,
         "The Trusted auto limit can't exceed the Core auto limit"
@@ -69,14 +89,21 @@ pub fn rules(rules: &Rules) {
         rules.auto_limit_core.0 <= rules.reviewer_limit.0,
         "The Core auto limit can't exceed the reviewer limit"
     );
-    require!(rules.reviewer_limit.0 > 0, "reviewer_limit must be above zero");
     require!(
-        rules.challenge_period_sec >= MIN_CHALLENGE_SEC && rules.challenge_period_sec <= MAX_CHALLENGE_SEC,
+        rules.reviewer_limit.0 > 0,
+        "reviewer_limit must be above zero"
+    );
+    require!(
+        rules.challenge_period_sec >= MIN_CHALLENGE_SEC
+            && rules.challenge_period_sec <= MAX_CHALLENGE_SEC,
         "The challenge window must be between 1 minute and 30 days"
     );
     require!(
         rules.max_open_per_creator >= 1 && rules.max_open_per_creator <= 20,
         "max_open_per_creator must be 1-20"
     );
-    require!(rules.slash_points <= 100, "slash_points must be at most 100");
+    require!(
+        rules.slash_points <= 100,
+        "slash_points must be at most 100"
+    );
 }
