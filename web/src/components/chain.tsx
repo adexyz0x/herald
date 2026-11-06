@@ -63,10 +63,14 @@ export function AccountLink({ accountId, showId = false }: { accountId: string; 
 
 /** Each route owns a color: bronze for automatic, slate for a reviewer, aubergine for the DAO. */
 const routeStyle: Record<Route, { ring: string; ink: string; wash: string; label: string; around: string }> = {
-  Auto: { ring: "var(--gold)", ink: "var(--gold-ink)", wash: "var(--gold-wash)", label: "Auto", around: "PAID · AUTO APPROVAL · PAID · AUTO APPROVAL · " },
-  Reviewer: { ring: "var(--accent)", ink: "var(--accent-strong)", wash: "var(--accent-wash)", label: "Reviewer", around: "PAID · REVIEWER APPROVAL · PAID · REVIEWER · " },
-  Dao: { ring: "var(--dao)", ink: "var(--dao-ink)", wash: "var(--dao-wash)", label: "DAO vote", around: "PAID · DAO VOTE · PAID · DAO VOTE · PAID · DAO · " },
+  Auto: { ring: "var(--gold)", ink: "var(--gold-ink)", wash: "var(--gold-wash)", label: "Auto", around: "PAID · AUTO APPROVAL · PAID · AUTO · " },
+  Reviewer: { ring: "var(--accent)", ink: "var(--accent-strong)", wash: "var(--accent-wash)", label: "Reviewer", around: "PAID · REVIEWER · PAID · REVIEWER · " },
+  Dao: { ring: "var(--dao)", ink: "var(--dao-ink)", wash: "var(--dao-wash)", label: "DAO vote", around: "PAID · DAO VOTE · PAID · DAO VOTE · " },
 };
+
+/** The seal's text runs once round a circle of radius 36, spaced to close up exactly where it starts. */
+const RING = 2 * Math.PI * 36;
+const ringSpacing = (text: string) => (RING / text.length - 8.2 * 0.6).toFixed(3); // Plex Mono glyphs are 0.6 em wide
 
 export function RouteIcon({ route }: { route: Route }) {
   if (route === "Auto") return <path d="M13 2 4 14h7l-1 8 9-12h-7z" />;
@@ -136,8 +140,10 @@ export function Seal({
       <circle cx="50" cy="50" r="40" fill={style.wash} />
       <circle cx="50" cy="50" r="27" fill="var(--surface)" stroke={style.ring} strokeWidth="1" strokeDasharray="2.5 2.5" />
       <g className="seal-ring">
-        <text fill={style.ink} fontSize="8.2" fontFamily="var(--font-data)" letterSpacing="1.2">
-          <textPath href={`#${id}`}>{style.around}</textPath>
+        <text fill={style.ink} fontSize="8.2" fontFamily="var(--font-data)" letterSpacing={ringSpacing(style.around)}>
+          <textPath href={`#${id}`} textLength={RING.toFixed(2)} lengthAdjust="spacing">
+            {style.around}
+          </textPath>
         </text>
       </g>
       <svg x="36" y="36" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={style.ink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
