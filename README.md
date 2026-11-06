@@ -21,13 +21,50 @@ Built for the [NEAR HACKATHON](https://nearhackathon.com), Social Money track. W
 - **Pilot DAO:** [`herald-dao.sputnik-v2.testnet`](https://testnet.nearblocks.io/address/herald-dao.sputnik-v2.testnet), created through NEAR's Sputnik factory. Its council is Ade, who leads the project, plus two operator accounts the Herald team runs for the pilot (`oliver-herald`, `amelia-herald`). A proposal passes with 2 of 3 votes.
 - **Campaign:** "Herald launch week", launched by a DAO vote ([brief](https://herald-near.pages.dev/briefs/launch-week.html)).
 
-**Demo test, disclosed.** The activity on testnet so far is a demo test run by the Herald team with three demo tester accounts: `aminx-demo`, `lamz-demo` and `zhod-demo`. Their profiles say so, and their proof links open [demo posts](https://herald-near.pages.dev/demo/posts) that are marked as demos. The first run exercised all three routes with real transactions:
+## Demo test on testnet
 
-- Lamz: a thread approved by a reviewer and paid on the spot.
-- Aminx: two reviewed threads, which made Aminx Trusted, then a third thread that paid automatically after its public window.
-- Zhod: a custom request a reviewer sent to the DAO; two council votes passed it and the DAO paid it.
+Herald hasn't paid real creators yet. To test the whole program end to end, the Herald team ran the launch week campaign on testnet from 3 to 5 November with three demo tester accounts: `aminx-demo`, `lamz-demo` and `zhod-demo`. Their profiles say they are demo accounts, and every proof link opens a [demo post](https://herald-near.pages.dev/demo/posts) marked as a demo. Reviews came from the operator account `amelia-herald`, and council votes from `amelia-herald` and `oliver-herald`.
 
-Since then the same three accounts have been paid 16 times, 9.5 test NEAR in all: 7 approved by a reviewer, 5 automatic and 4 by DAO vote. Every step is public on chain.
+Every step below is a real transaction, readable from `herald.testnet` (`get_campaign_submissions`, `get_reputation`) and from the DAO's proposals.
+
+| Route | Payouts | Test NEAR | Decided by |
+| --- | --- | --- | --- |
+| One reviewer | 7 | 3.25 | `amelia-herald`, a reviewer the DAO appointed |
+| Automatic | 5 | 2.5 | The clock, after a 3-minute public window |
+| DAO vote | 4 | 3.75 | The DAO's council, 2 of 3 votes each time |
+| **Total** | **16** | **9.5** | |
+
+What the test showed:
+
+- **Ranks are earned one payout at a time.** Aminx's first two threads went to a reviewer. After 2 paid posts Aminx was Trusted, and every thread after that paid automatically. After 5, Aminx was Core. Lamz ended on Core too, and Zhod on Trusted.
+- **Custom amounts always get a reviewer.** Lamz's infographic and carousels had custom amounts, so a reviewer approved each one, even after Lamz was Trusted.
+- **A reviewer can hand a payout to the DAO.** A reviewer sent Zhod's custom requests up. Each one became a Sputnik proposal, and the DAO paid it when two of the three council members voted yes.
+- **The DAO controls the money.** The council launched the campaign with 8 NEAR and topped it up twice with 1 NEAR, each time by a vote. All 7 proposals (the launch, two top-ups and four payouts) passed 2 of 3. Of the 9.99 NEAR budget (a little goes to storage), 9.5 is paid and about 0.49 is left. It goes back to the DAO when the campaign closes.
+- **No veto was confirmed on testnet.** In the demo video a reviewer opens the Veto dialog and cancels it. Vetoes, bans and failed-transfer rollbacks are covered by the [contract tests](#tests) instead.
+
+<details>
+<summary>Every payout in the test</summary>
+
+| # | Creator | Work | Test NEAR | Rank when sent | Route | Paid |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | Lamz | [Thread on how Herald pays ambassadors](https://herald-near.pages.dev/demo/posts#lamz-thread) (X thread) | 0.5 | Newcomer | Reviewer | 3 Nov |
+| 1 | Aminx | [Why ambassador payouts are broken](https://herald-near.pages.dev/demo/posts#aminx-thread-1) (X thread) | 0.5 | Newcomer | Reviewer | 3 Nov |
+| 2 | Aminx | [Three routes, one treasury](https://herald-near.pages.dev/demo/posts#aminx-thread-2) (X thread) | 0.5 | Newcomer | Reviewer | 3 Nov |
+| 3 | Zhod | [Yoruba translation of the launch brief](https://herald-near.pages.dev/demo/posts#zhod-translation) (custom amount) | 2 | Newcomer | DAO vote | 3 Nov |
+| 4 | Aminx | [Paid automatically once Trusted](https://herald-near.pages.dev/demo/posts#aminx-thread-3) (X thread) | 0.5 | Trusted | Automatic | 3 Nov |
+| 5 | Lamz | [Thread on who approves a payout](https://herald-near.pages.dev/demo/posts.html#lamz-thread-2) (X thread) | 0.5 | Newcomer | Reviewer | 4 Nov |
+| 6 | Lamz | [Infographic of the three payout routes](https://herald-near.pages.dev/demo/posts.html#lamz-infographic) (custom amount) | 0.75 | Trusted | Reviewer | 4 Nov |
+| 7 | Aminx | [Thread on the challenge window](https://herald-near.pages.dev/demo/posts.html#aminx-thread-4) (X thread) | 0.5 | Trusted | Automatic | 4 Nov |
+| 8 | Zhod | [Yoruba voice-over of the launch thread](https://herald-near.pages.dev/demo/posts.html#zhod-voiceover) (custom amount) | 1 | Newcomer | DAO vote | 4 Nov |
+| 9 | Aminx | [Thread on how ranks are earned](https://herald-near.pages.dev/demo/posts.html#aminx-thread-5) (X thread) | 0.5 | Trusted | Automatic | 4 Nov |
+| 10 | Lamz | [Payout carousel](https://herald-near.pages.dev/demo/posts.html#lamz-carousel) (custom amount) | 0.25 | Trusted | Reviewer | 4 Nov |
+| 11 | Zhod | [Yoruba subtitles](https://herald-near.pages.dev/demo/posts.html#zhod-subtitles) (custom amount) | 0.35 | Trusted | DAO vote | 4 Nov |
+| 12 | Aminx | [Thread on who sends the payout](https://herald-near.pages.dev/demo/posts.html#aminx-thread-6) (X thread) | 0.5 | Core | Automatic | 5 Nov |
+| 13 | Lamz | [Carousel on ranks](https://herald-near.pages.dev/demo/posts.html#lamz-carousel-2) (custom amount) | 0.25 | Trusted | Reviewer | 5 Nov |
+| 14 | Aminx | [Thread on the veto](https://herald-near.pages.dev/demo/posts.html#aminx-thread-7) (X thread) | 0.5 | Core | Automatic | 5 Nov |
+| 15 | Zhod | [Pidgin translation](https://herald-near.pages.dev/demo/posts.html#zhod-pidgin) (custom amount) | 0.4 | Trusted | DAO vote | 5 Nov |
+
+</details>
 
 ## Try it locally in five minutes
 
