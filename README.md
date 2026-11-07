@@ -1,8 +1,8 @@
-<a href="https://herald-near.pages.dev"><img src="docs/assets/banner.png" alt="Herald: Pay the people who carry your message. A payout receipt for 0.4 NEAR, stamped DAO vote." width="100%"></a>
+<a href="https://herald.cash"><img src="docs/assets/banner.png" alt="Herald: Pay the people who carry your message. A payout receipt for 0.4 NEAR, stamped DAO vote." width="100%"></a>
 
 <p align="center">
   <a href="https://github.com/adexyz0x/herald/actions/workflows/ci.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/adexyz0x/herald/ci.yml?branch=main&style=flat-square&label=tests&labelColor=211c17"></a>
-  <a href="https://herald-near.pages.dev"><img alt="Live app: herald-near.pages.dev" src="https://img.shields.io/badge/live-herald--near.pages.dev-a9844a?style=flat-square&labelColor=211c17"></a>
+  <a href="https://herald.cash"><img alt="Live app: herald.cash" src="https://img.shields.io/badge/live-herald.cash-a9844a?style=flat-square&labelColor=211c17"></a>
   <a href="https://testnet.nearblocks.io/address/herald.testnet"><img alt="NEAR testnet: herald.testnet" src="https://img.shields.io/badge/NEAR%20testnet-herald.testnet-4f6b4e?style=flat-square&labelColor=211c17"></a>
   <a href="https://nearhackathon.com"><img alt="Built at NEAR HACKATHON" src="https://img.shields.io/badge/built%20at-NEAR%20HACKATHON-6c4a62?style=flat-square&labelColor=211c17"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3e4c63?style=flat-square&labelColor=211c17"></a>
@@ -36,12 +36,12 @@ Built for the [NEAR HACKATHON](https://nearhackathon.com), Social Money track. W
 
 <table>
   <tr>
-    <td width="50%"><a href="https://herald-near.pages.dev/#/campaigns/0"><img src="docs/assets/campaign.png" alt="Campaign page: 0.49 NEAR left of a 9.99 NEAR budget, the rate card and the rules"></a><br><sub><b>Campaign.</b> The budget the DAO voted in, the rate card and the rules.</sub></td>
-    <td width="50%"><a href="https://herald-near.pages.dev/#/review"><img src="docs/assets/review.png" alt="Review queue: recent payouts, each stamped DAO vote, Auto or Reviewer"></a><br><sub><b>Review queue.</b> Every decision is public, stamped with the route that paid it.</sub></td>
+    <td width="50%"><a href="https://herald.cash/#/campaigns/0"><img src="docs/assets/campaign.png" alt="Campaign page: 0.49 NEAR left of a 9.99 NEAR budget, the rate card and the rules"></a><br><sub><b>Campaign.</b> The budget the DAO voted in, the rate card and the rules.</sub></td>
+    <td width="50%"><a href="https://herald.cash/#/review"><img src="docs/assets/review.png" alt="Review queue: recent payouts, each stamped DAO vote, Auto or Reviewer"></a><br><sub><b>Review queue.</b> Every decision is public, stamped with the route that paid it.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><a href="https://herald-near.pages.dev/#/creators/aminx-demo.testnet"><img src="docs/assets/creator.png" alt="Creator page: Aminx, 7 paid deliverables, 3.5 NEAR earned, Core with this DAO"></a><br><sub><b>Creator.</b> One point per paid post, and the rank it earns with this DAO.</sub></td>
-    <td width="50%"><a href="https://herald-near.pages.dev/#/council"><img src="docs/assets/council.png" alt="Council page: the Sputnik DAO's treasury, three members, 2 of 3 votes to pass"></a><br><sub><b>Council.</b> The DAO's treasury, its members and every open vote.</sub></td>
+    <td width="50%"><a href="https://herald.cash/#/creators/aminx-demo.testnet"><img src="docs/assets/creator.png" alt="Creator page: Aminx, 7 paid deliverables, 3.5 NEAR earned, Core with this DAO"></a><br><sub><b>Creator.</b> One point per paid post, and the rank it earns with this DAO.</sub></td>
+    <td width="50%"><a href="https://herald.cash/#/council"><img src="docs/assets/council.png" alt="Council page: the Sputnik DAO's treasury, three members, 2 of 3 votes to pass"></a><br><sub><b>Council.</b> The DAO's treasury, its members and every open vote.</sub></td>
   </tr>
 </table>
 
@@ -58,7 +58,7 @@ A treasury like Sputnik DAO or Trezu keeps the money safe and runs the votes. It
 
 ## Live on NEAR testnet
 
-- **App:** https://herald-near.pages.dev (connect a [Meteor](https://wallet.meteorwallet.app) wallet switched to Testnet)
+- **App:** https://herald.cash (connect a [Meteor](https://wallet.meteorwallet.app) wallet switched to Testnet)
 - **Contract:** [`herald.testnet`](https://testnet.nearblocks.io/address/herald.testnet)
 - **Pilot DAO:** [`herald-dao.sputnik-v2.testnet`](https://testnet.nearblocks.io/address/herald-dao.sputnik-v2.testnet), created through NEAR's Sputnik factory. Its council is Ade, who leads the project, plus two operator accounts the Herald team runs for the pilot (`oliver-herald`, `amelia-herald`). A proposal passes with 2 of 3 votes.
 - **Campaign:** "Herald launch week", launched by a DAO vote ([brief](https://herald-near.pages.dev/briefs/launch-week.html)).

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the testnet app and publishes it to Cloudflare Pages (https://herald-near.pages.dev).
+# Builds the testnet app and publishes it to Cloudflare Pages (https://herald.cash, also https://herald-near.pages.dev).
 # Needs a Cloudflare login (`wrangler login`). Refuses to publish if a key ends up in the build.
 set -euo pipefail
 
