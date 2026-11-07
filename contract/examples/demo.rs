@@ -448,8 +448,8 @@ async fn main() -> anyhow::Result<()> {
             0,
             None,
             Some(25.0),
-            "https://example.org/sol/beacon-hausa-guide",
-            "Full Hausa translation of the docs",
+            "https://example.org/sol/beacon-launch-video",
+            "Launch video for the Q4 push",
         )
         .await?;
     let proposal: Value = d

@@ -14,6 +14,7 @@
   <a href="#try-it-locally-in-five-minutes">Try it locally</a> ·
   <a href="#tests">Tests</a> ·
   <a href="#how-it-fits-together">How it fits together</a> ·
+  <a href="#security">Security</a> ·
   <a href="docs/DESIGN.md">Design</a>
 </p>
 
@@ -43,6 +44,17 @@ Built for the [NEAR HACKATHON](https://nearhackathon.com), Social Money track. W
     <td width="50%"><a href="https://herald-near.pages.dev/#/council"><img src="docs/assets/council.png" alt="Council page: the Sputnik DAO's treasury, three members, 2 of 3 votes to pass"></a><br><sub><b>Council.</b> The DAO's treasury, its members and every open vote.</sub></td>
   </tr>
 </table>
+
+## Why
+
+Every crypto project runs an ambassador or creator program, and paying people is the slow part:
+
+- Work is tracked in a spreadsheet or a Discord channel.
+- Every payout waits for multisig signers or a treasury vote, so a $50 thread waits as long as a $5,000 grant.
+- Signers either approve batches they never read or become the bottleneck, and creators wait weeks asking "wen payment".
+- A creator's track record doesn't travel, so they start from zero with every new project.
+
+A treasury like Sputnik DAO or Trezu keeps the money safe and runs the votes. It isn't built to pay dozens of people every week. Herald does that part, and the DAO stays in charge of the money.
 
 ## Live on NEAR testnet
 
@@ -137,6 +149,13 @@ cd web && npm run typecheck && npm run build
 
 [GitHub Actions](.github/workflows/ci.yml) runs all of this on a clean machine for every push, along with `cargo fmt --check` and `cargo clippy`.
 
+`npm audit` in `web/` still lists warnings from the wallet libraries, not from Herald's own code:
+
+- **`decode-uri-component` (high, denial of service).** It comes in through the Meteor wallet SDK's `query-string` 7. The fixed version is an ES module that `query-string` 7 can't load, and even the latest Meteor SDK pins these versions. Only `query-string`'s parsing runs the affected code, and neither Herald nor the Meteor SDK calls it.
+- **`elliptic` (low).** It comes in through `@near-js/crypto`, and no fixed version exists yet.
+
+The Meteor SDK's `nanoid` is pinned to the fixed 5.x release in `web/package.json`.
+
 ## How it fits together
 
 ```
@@ -164,6 +183,36 @@ The full specification, including the lifecycle, parameters and threat model, is
 | Views | `get_campaign(s)`, `get_submission`, `get_campaign_submissions`, `get_creator_submissions`, `get_reputation`, `get_tier`, `get_dao_proposal`, `get_stats` |
 
 Every state change emits a NEP-297 event (`standard: "herald"`).
+
+## NEAR technology used
+
+| What | Where |
+| --- | --- |
+| Sputnik DAO v2 `FunctionCall` proposals. The DAO launches, tops up and closes campaigns, and pays large requests, through its own votes. Herald writes each proposal ready to file. | `contract/src/campaign.rs`, `get_dao_proposal` in `contract/src/views.rs`, `add_proposal` and `act_proposal` in `web/src/lib/sputnik.ts` |
+| A transfer with a callback. If paying a creator fails, the payout rolls back and waits for a retry. | `on_payout` in `contract/src/payout.rs` |
+| Storage staking. Each call charges the storage it adds to whoever made it and refunds the rest. | `settle_storage` in `contract/src/lib.rs` |
+| Block time for the public window before an automatic payout. | `contract/src/submission.rs` |
+| NEP-297 events for every change, so the app and any indexer can rebuild the history. | `contract/src/events.rs` |
+| NEP-330 source metadata that links the deployed contract to this repo. | `contract/Cargo.toml`, built with `cargo-near` |
+| `near-sdk` 5 collections (`LookupMap`, `LookupSet`). | `contract/src/lib.rs` |
+| `near-workspaces` sandbox tests against the real Sputnik DAO v2 builds from mainnet and testnet. | `contract/tests/sputnik.rs` |
+| NEAR Wallet Selector with Meteor and Intear. | `web/src/lib/wallet.ts` |
+| `near-api-js` on the local demo chain, where each demo person signs with their own key. | `web/src/lib/signer.ts` |
+| FastNEAR RPC for testnet reads. | `web/src/lib/config.ts` |
+
+## Security
+
+| Risk | What stops it |
+| --- | --- |
+| Someone other than the DAO changes a campaign | Every rule-changing method checks that the caller is the campaign's DAO, which acts only through its own votes. The contract has no admin methods. |
+| The budget is overspent | `reserved + paid ≤ budget` is checked on every approval. |
+| Fake accounts farm trust | New accounts are Newcomers, and every Newcomer payout needs a reviewer the DAO appointed. |
+| A trusted creator submits junk | Automatic payouts wait in a public window where any reviewer can veto. A veto costs points, and a fraud veto bans. Automatic limits are small. |
+| A reviewer pays a friend, or themselves | Reviewers can't decide on their own work, each approval is capped, and every decision is public and named. The DAO can remove a reviewer. |
+| Trust from one DAO is used in another | Reputation is kept per DAO. |
+| Spam | Each campaign caps the open submissions per creator (3 by default), and creators pay the storage for their own. |
+
+Known limits: Herald doesn't check that a post exists or how it did. That is the reviewer's job, and an AI pre-check is on the list below. Payouts are in NEAR for now. The full threat model is in [docs/DESIGN.md](docs/DESIGN.md#10-threat-model).
 
 ## Repository
 
