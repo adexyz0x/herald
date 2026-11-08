@@ -293,7 +293,11 @@ export function Shell({ route, children }: { route: RouteMatch; children: ReactN
         <div className="mx-auto flex max-w-[1180px] flex-col gap-3 px-4 py-6 text-[13px] text-ink-faint sm:px-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <span>Herald runs on NEAR and plugs into Sputnik DAO and Trezu treasuries. No admin key.</span>
-            {config.network === "local" && <span>Demo data on a private local chain. All names are fictional.</span>}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              {config.network === "local" && <span>Demo data on a private local chain. All names are fictional.</span>}
+              <a href="https://x.com/heraldcash" target="_blank" rel="noreferrer" className="underline-offset-4 hover:text-ink hover:underline">X @heraldcash</a>
+              <a href="https://github.com/adexyz0x/herald" target="_blank" rel="noreferrer" className="underline-offset-4 hover:text-ink hover:underline">GitHub</a>
+            </div>
           </div>
           <ul className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Color key">
             {LEGEND.map((l) => (

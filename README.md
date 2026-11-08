@@ -4,6 +4,7 @@
   <a href="https://github.com/adexyz0x/herald/actions/workflows/ci.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/adexyz0x/herald/ci.yml?branch=main&style=flat-square&label=tests&labelColor=211c17"></a>
   <a href="https://herald.cash"><img alt="Live app: herald.cash" src="https://img.shields.io/badge/live-herald.cash-a9844a?style=flat-square&labelColor=211c17"></a>
   <a href="https://testnet.nearblocks.io/address/herald.testnet"><img alt="NEAR testnet: herald.testnet" src="https://img.shields.io/badge/NEAR%20testnet-herald.testnet-4f6b4e?style=flat-square&labelColor=211c17"></a>
+  <a href="https://x.com/heraldcash"><img alt="X: @heraldcash" src="https://img.shields.io/badge/X-%40heraldcash-211c17?style=flat-square&labelColor=211c17"></a>
   <a href="https://nearhackathon.com"><img alt="Built at NEAR HACKATHON" src="https://img.shields.io/badge/built%20at-NEAR%20HACKATHON-6c4a62?style=flat-square&labelColor=211c17"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3e4c63?style=flat-square&labelColor=211c17"></a>
 </p>
@@ -240,6 +241,8 @@ Known limits: Herald doesn't check that a post exists or how it did. That is the
 ## Built by
 
 [Ade](https://x.com/adefola_), a former Arbitrum ambassador who works on user acquisition at Immutable and runs creator campaigns.
+
+Follow the project on X: [@heraldcash](https://x.com/heraldcash).
 
 ## License
 
